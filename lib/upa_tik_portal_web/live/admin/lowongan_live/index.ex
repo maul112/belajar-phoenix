@@ -11,6 +11,7 @@ defmodule UpaTikPortalWeb.Admin.LowonganLive.Index do
       socket
       |> assign(:any_lowongan?, lowongans != [])
       |> assign(:search, "")
+      |> assign(:status, "")
       |> stream(:lowongans, lowongans)
     }
   end
@@ -21,12 +22,19 @@ defmodule UpaTikPortalWeb.Admin.LowonganLive.Index do
   end
 
   @impl true
-  def handle_event("filter", %{"search" => search}, socket) do
-    lowongans = InternshipOpeningService.list_internship_openings(search: search)
+  def handle_event("filter", %{"search" => search, "status" => status}, socket) do
+    is_active = case status do
+      "true" -> true
+      "false" -> false
+      _ -> nil
+    end
+
+    lowongans = InternshipOpeningService.list_internship_openings(search: search, is_active: is_active)
     {:noreply,
      socket
      |> assign(:any_lowongan?, lowongans != [])
      |> assign(:search, search)
+     |> assign(:status, status)
      |> stream(:lowongans, lowongans, reset: true)}
   end
 
