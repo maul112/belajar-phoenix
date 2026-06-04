@@ -1,0 +1,27 @@
+# Setup Guide for UPA TIK Portal
+
+Follow these steps to set up the project on your laptop:
+
+1. **Install Elixir & Erlang**: Make sure you have Elixir and Erlang installed.
+2. **Install PostgreSQL**: Ensure PostgreSQL is running.
+3. **Configure Environment Variables**:
+   - Copy `.env.example` to `.env`.
+   - Update the database credentials and other settings in `.env`.
+4. **Install Dependencies**:
+   ```bash
+   mix deps.get
+   ```
+5. **Setup Database**:
+   ```bash
+   mix ecto.setup
+   ```
+6. **Install Assets Dependencies**:
+   ```bash
+   cd assets && npm install && cd ..
+   ```
+7. **Start Phoenix Server**:
+   ```bash
+   mix phx.server
+   ```
+
+Now you can visit `localhost:4000` from your browser.

@@ -7,4 +7,4 @@ defmodule UpaTikPortalWeb.PageHTML do
   use UpaTikPortalWeb, :html
 
   embed_templates "page_html/*"
-end
+end  

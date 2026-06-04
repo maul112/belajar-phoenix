@@ -12,6 +12,7 @@ defmodule UpaTikPortal.Keluhans.Keluhan do
     field :admin_notes, :string
 
     belongs_to :user, UpaTikPortal.Accounts.User
+    has_many :messages, UpaTikPortal.Keluhans.Message
 
     timestamps(type: :utc_datetime)
   end

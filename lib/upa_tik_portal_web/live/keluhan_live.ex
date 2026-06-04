@@ -7,6 +7,12 @@ defmodule UpaTikPortalWeb.KeluhanLive do
     user_id = session["user_id"]
     user = UpaTikPortal.Accounts.get_user!(user_id)
     keluhans = Keluhans.list_keluhans_by_user(user_id)
+    
+    if connected?(socket) do
+      for keluhan <- keluhans do
+        Keluhans.subscribe(keluhan.id)
+      end
+    end
 
     socket =
       socket
@@ -17,6 +23,8 @@ defmodule UpaTikPortalWeb.KeluhanLive do
       |> assign(description: "")
       |> assign(errors: %{})
       |> assign(submitted: false)
+      |> assign(new_messages: %{})
+
     {:ok, socket}
   end
 
@@ -59,9 +67,46 @@ defmodule UpaTikPortalWeb.KeluhanLive do
     {:noreply, assign(socket, submitted: false)}
   end
 
+  def handle_event("update_message", %{"_target" => ["message_" <> keluhan_id]} = params, socket) do
+    msg = params["message_" <> keluhan_id]
+    {:noreply, assign(socket, new_messages: Map.put(socket.assigns.new_messages, keluhan_id, msg))}
+  end
+  def handle_event("update_message", _, socket), do: {:noreply, socket}
+
+  def handle_event("send_message", %{"keluhan_id" => keluhan_id} = params, socket) do
+    msg = params["message_" <> keluhan_id]
+    if msg && String.trim(msg) != "" do
+      attrs = %{
+        "content" => msg,
+        "is_admin" => false,
+        "keluhan_id" => keluhan_id,
+        "user_id" => socket.assigns.current_user.id
+      }
+      
+      case Keluhans.create_message(attrs) do
+        {:ok, _message} ->
+          {:noreply, assign(socket, new_messages: Map.put(socket.assigns.new_messages, keluhan_id, ""))}
+        {:error, _} ->
+          {:noreply, put_flash(socket, :error, "Gagal mengirim pesan")}
+      end
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info({:new_message, message}, socket) do
+    keluhans = Enum.map(socket.assigns.keluhans, fn k ->
+      if k.id == message.keluhan_id do
+        Map.update!(k, :messages, fn msgs -> msgs ++ [message] end)
+      else
+        k
+      end
+    end)
+    {:noreply, assign(socket, keluhans: keluhans)}
+  end
   def render(assigns) do
     ~H"""
-    <%!-- <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-5xl px-4 sm:px-6">
+    <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-5xl px-4 sm:px-6">
       <div class="flex justify-between h-16">
         <div class="flex items-center gap-3">
           <div class="p-1 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center">
@@ -79,15 +124,14 @@ defmodule UpaTikPortalWeb.KeluhanLive do
           </a>
         </div>
       </div>
-    </nav> --%>
-    <.navbar active_tab={:keluhan} current_user={@current_user}>
+    </nav>
 
     <div class="max-w-4xl mx-auto space-y-12 pb-20">
       <div class="text-center space-y-3">
-        <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight sm:text-5xl uppercase italic">
+        <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl uppercase italic">
           Lapor <span class="text-rose-500">Kendala</span>
         </h1>
-        <p class="text-slate-500 dark:text-white text-lg font-medium max-w-2xl mx-auto">Sampaikan masalah teknis Anda secara detail agar tim kami dapat membantu dengan cepat.</p>
+        <p class="text-slate-500 text-lg font-medium max-w-2xl mx-auto">Sampaikan masalah teknis Anda secara detail agar tim kami dapat membantu dengan cepat.</p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -158,17 +202,32 @@ defmodule UpaTikPortalWeb.KeluhanLive do
                       </div>
                       <h4 class="font-black text-slate-900 text-xl tracking-tight group-hover:text-rose-500 transition-colors uppercase italic"><%= keluhan.subject %></h4>
                       <p class="text-slate-500 mt-3 font-medium leading-relaxed"><%= keluhan.description %></p>
-
-                      <%= if keluhan.admin_notes do %>
-                        <div class="mt-8 p-6 bg-rose-50/50 rounded-3xl border border-rose-100 relative group/notes overflow-hidden">
-                          <div class="absolute -left-1 top-6 w-1 h-10 bg-rose-500 rounded-full"></div>
-                          <div class="absolute -right-6 -bottom-6 text-rose-100/50 rotate-12 group-hover/notes:scale-110 transition-transform">
-                            <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-8 3a1 1 0 001-1V9a1 1 0 00-2 0v3a1 1 0 001 1zm0-6a1 1 0 100-2 1 1 0 000 2z"/></svg>
-                          </div>
-                          <span class="text-[9px] font-black uppercase tracking-[.2em] text-rose-400 block mb-2">Tanggapan Petugas:</span>
-                          <p class="text-slate-800 font-bold leading-relaxed relative z-10 italic">"<%= keluhan.admin_notes %>"</p>
+                      
+                      <div class="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-200">
+                        <h5 class="text-[9px] font-black uppercase tracking-[.2em] text-slate-400 mb-4 block">Riwayat Percakapan:</h5>
+                        <div class="space-y-4 mb-4">
+                          <%= if Enum.empty?(keluhan.messages) do %>
+                            <p class="text-xs text-slate-400 italic">Belum ada percakapan.</p>
+                          <% else %>
+                            <%= for msg <- keluhan.messages do %>
+                              <div class={["flex", if(msg.is_admin, do: "justify-start", else: "justify-end")]}>
+                                <div class={["max-w-[85%] rounded-2xl p-4 shadow-sm", if(msg.is_admin, do: "bg-white border border-slate-200 text-slate-800 rounded-tl-sm", else: "bg-rose-500 text-white rounded-tr-sm")]}>
+                                  <p class="text-[10px] mb-1 opacity-70 font-black tracking-widest"><%= if msg.is_admin, do: "Admin UPA TIK", else: "Anda" %></p>
+                                  <p class="text-sm font-medium whitespace-pre-wrap"><%= msg.content %></p>
+                                  <p class="text-[9px] text-right mt-2 opacity-50"><%= Calendar.strftime(msg.inserted_at, "%d %b %Y %H:%M") %></p>
+                                </div>
+                              </div>
+                            <% end %>
+                          <% end %>
                         </div>
-                      <% end %>
+                        
+                        <form phx-submit="send_message" phx-change="update_message" class="flex gap-2">
+                          <input type="hidden" name="keluhan_id" value={keluhan.id} />
+                          <input type="text" name={"message_" <> keluhan.id} value={@new_messages[keluhan.id] || ""} placeholder="Ketik balasan untuk Admin..." autocomplete="off"
+                                 class="flex-1 px-6 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-rose-50 focus:border-rose-500 outline-none transition-all shadow-inner" />
+                          <button type="submit" class="px-6 py-3 bg-rose-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-rose-600 transition-all shadow-md">Kirim</button>
+                        </form>
+                      </div>
                     </div>
                   <% end %>
                 <% end %>
@@ -178,7 +237,6 @@ defmodule UpaTikPortalWeb.KeluhanLive do
         </div>
       </div>
     </div>
-    </.navbar>
     """
   end
 

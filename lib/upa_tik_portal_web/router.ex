@@ -46,6 +46,7 @@ defmodule UpaTikPortalWeb.Router do
   scope "/portal", UpaTikPortalWeb do
     pipe_through [:browser, :require_auth]
 
+    get "/", PortalController, :index
     live "/ajukan", RequestLive, :index
     live "/status", RequestStatusLive, :index
     live "/keluhan", KeluhanLive, :index

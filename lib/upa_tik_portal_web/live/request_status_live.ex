@@ -23,53 +23,11 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
      )}
   end
 
-  def handle_event("update_keluhan", params, socket) do
-    field_name = List.first(params["_target"])
-    value = params[field_name]
 
-    if field_name in ["keluhan_subject", "keluhan_description"] do
-      {:noreply, assign(socket, String.to_existing_atom(field_name), value)}
-    else
-      {:noreply, socket}
-    end
-  end
-
-  def handle_event("submit_keluhan", _params, socket) do
-    user = socket.assigns.current_user
-
-    attrs = %{
-      "subject" => socket.assigns.keluhan_subject,
-      "description" => socket.assigns.keluhan_description
-    }
-
-    case Keluhans.create_keluhan(user.id, attrs) do
-      {:ok, _keluhan} ->
-        keluhans = Keluhans.list_keluhans_by_user(user.id)
-
-        {:noreply,
-         socket
-         |> assign(
-           keluhan_submitted: true,
-           keluhan_subject: "",
-           keluhan_description: "",
-           keluhan_errors: %{},
-           keluhans: keluhans
-         )
-         |> put_flash(:info, "Keluhan berhasil dikirim!")}
-
-      {:error, changeset} ->
-        errors = Ecto.Changeset.traverse_errors(changeset, fn {msg, _opts} -> msg end)
-        {:noreply, assign(socket, keluhan_errors: errors)}
-    end
-  end
-
-  def handle_event("new_keluhan", _params, socket) do
-    {:noreply, assign(socket, keluhan_submitted: false)}
-  end
 
   def render(assigns) do
     ~H"""
-    <%!-- <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-5xl px-4 sm:px-6">
+    <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-5xl px-4 sm:px-6">
       <div class="flex justify-between h-16">
         <div class="flex items-center gap-3">
           <div class="p-1 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center">
@@ -87,9 +45,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
           </a>
         </div>
       </div>
-    </nav> --%>
-
-    <.navbar active_tab={:status} current_user={@current_user}>
+    </nav>
 
     <div class="max-w-4xl mx-auto space-y-16 pb-20">
       <div class="flex flex-col md:flex-row justify-between items-center bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 gap-6">
@@ -106,9 +62,9 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
       <section class="space-y-8">
         <div class="flex items-center gap-4">
           <div class="h-8 w-2 bg-indigo-600 rounded-full"></div>
-          <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Riwayat Aktivasi & Reset</h2>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight uppercase">Riwayat Aktivasi & Reset</h2>
         </div>
-
+        
         <%= if Enum.empty?(@requests) do %>
           <div class="bg-white rounded-[2.5rem] p-20 text-center border-2 border-dashed border-slate-100 shadow-inner">
             <div class="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -121,7 +77,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
             <%= for request <- @requests do %>
               <div class="group bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-10 hover:shadow-indigo-100 transition-all relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-bl-[100%] translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-700"></div>
-
+                
                 <div class="flex flex-col md:flex-row justify-between gap-8 relative z-10">
                   <div class="space-y-5 flex-1">
                     <div class="flex flex-wrap items-center gap-3">
@@ -137,7 +93,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
                       <h3 class="text-2xl font-black text-slate-900 tracking-tight"><%= request.full_name %></h3>
                       <p class="text-indigo-600 font-bold font-mono text-sm tracking-tight bg-slate-50 inline-block px-3 py-1 rounded-lg border border-slate-100"><%= request.email_requested %></p>
                     </div>
-
+                    
                     <%= if request.status == "disetujui" && request.otp_code do %>
                       <div class="mt-6 p-6 bg-indigo-50 border border-indigo-100 rounded-3xl shadow-inner relative overflow-hidden">
                         <div class="absolute -right-4 -bottom-4 text-indigo-100 opacity-30 rotate-12">
@@ -182,80 +138,41 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
       <section class="space-y-8">
         <div class="flex items-center gap-4">
           <div class="h-8 w-2 bg-rose-500 rounded-full"></div>
-          <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase italic">Pusat <span class="text-rose-500">Bantuan</span></h2>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight uppercase italic">Status <span class="text-rose-500">Keluhan</span></h2>
         </div>
-
+        
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div class="lg:col-span-12">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
-              <div class="flex flex-col md:flex-row gap-10">
-                <div class="md:w-1/3 space-y-6">
-                  <h3 class="text-2xl font-black text-slate-900 tracking-tight">Butuh Bantuan?</h3>
-                  <p class="text-slate-500 font-medium leading-relaxed">Jika ada kendala akses atau data tidak sesuai, silakan kirim laporan atau cek status keluhan Anda di sini.</p>
-
-                  <%= if @keluhan_submitted do %>
-                    <div class="bg-emerald-50 p-8 rounded-3xl border border-emerald-100 text-center animate-in zoom-in duration-300">
-                      <div class="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-200">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                      </div>
-                      <p class="text-emerald-700 font-black uppercase tracking-widest text-sm">Laporan Berhasil!</p>
-                      <button phx-click="new_keluhan" class="text-xs text-emerald-600 font-bold underline mt-4 hover:text-emerald-800 transition-colors uppercase italic tracking-widest">Kirim Laporan Lain</button>
+              <div class="flex flex-col gap-6">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-xl font-black text-slate-900 tracking-tight uppercase italic">Riwayat <span class="text-rose-500">Laporan</span></h3>
+                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><%= Enum.count(@keluhans) %> Laporan</span>
+                </div>
+                
+                <div class="space-y-4 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+                  <%= if Enum.empty?(@keluhans) do %>
+                    <div class="p-16 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-100">
+                      <p class="text-slate-300 font-black uppercase tracking-[0.2em] text-[10px]">Belum ada data keluhan</p>
                     </div>
                   <% else %>
-                    <form phx-submit="submit_keluhan" phx-change="update_keluhan" class="space-y-4">
-                      <div class="space-y-2">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Subjek</label>
-                        <input type="text" name="keluhan_subject" value={@keluhan_subject} placeholder="Contoh: Login Bermasalah" required
-                          class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-rose-50 focus:border-rose-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300 shadow-inner"/>
-                      </div>
-                      <div class="space-y-2">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Detail Kendala</label>
-                        <textarea name="keluhan_description" rows="4" placeholder="Jelaskan secara detail..." required
-                          class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-rose-50 focus:border-rose-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300 shadow-inner resize-none"><%= @keluhan_description %></textarea>
-                      </div>
-                      <button type="submit" class="w-full py-5 bg-rose-500 text-white font-black rounded-2xl hover:bg-rose-600 transition-all shadow-lg shadow-rose-100 flex items-center justify-center gap-2 group uppercase tracking-widest text-sm">
-                        <span>Kirim Laporan</span>
-                        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                      </button>
-                    </form>
-                  <% end %>
-                </div>
-
-                <div class="md:w-2/3 space-y-6">
-                  <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-black text-slate-900 tracking-tight uppercase italic">Keluhan <span class="text-rose-500">Anda</span></h3>
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><%= Enum.count(@keluhans) %> Laporan</span>
-                  </div>
-
-                  <div class="space-y-4 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
-                    <%= if Enum.empty?(@keluhans) do %>
-                      <div class="p-16 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-100">
-                        <p class="text-slate-300 font-black uppercase tracking-[0.2em] text-[10px]">Belum ada data keluhan</p>
-                      </div>
-                    <% else %>
-                      <%= for keluhan <- @keluhans do %>
-                        <% {badge_class, badge_text} = keluhan_badge(keluhan.status) %>
-                        <div class="group bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
-                          <div class="flex justify-between items-start mb-4">
-                            <span class={"text-[9px] font-black px-4 py-1.5 rounded-xl uppercase tracking-widest shadow-sm #{badge_class}"}>
-                              <%= badge_text %>
-                            </span>
-                            <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100"><%= Calendar.strftime(keluhan.inserted_at, "%d %b %Y") %></span>
-                          </div>
+                    <%= for keluhan <- @keluhans do %>
+                      <% {badge_class, badge_text} = keluhan_badge(keluhan.status) %>
+                      <div class="group bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col md:flex-row justify-between md:items-center gap-4">
+                        <div class="flex-1">
                           <h4 class="font-black text-slate-900 text-lg tracking-tight group-hover:text-rose-500 transition-colors uppercase"><%= keluhan.subject %></h4>
                           <p class="text-slate-500 text-sm mt-2 font-medium leading-relaxed"><%= keluhan.description %></p>
-
-                          <%= if keluhan.admin_notes do %>
-                            <div class="mt-4 p-5 bg-rose-50/50 rounded-2xl border border-rose-100 text-xs text-rose-800 font-medium italic relative">
-                              <div class="absolute -left-1 top-4 w-1 h-6 bg-rose-400 rounded-full"></div>
-                              <span class="font-black uppercase tracking-widest text-[8px] text-rose-400 block mb-1">Tanggapan Admin:</span>
-                              "<%= keluhan.admin_notes %>"
-                            </div>
-                          <% end %>
                         </div>
-                      <% end %>
+                        <div class="flex flex-col items-start md:items-end gap-2">
+                          <span class={"text-[9px] font-black px-4 py-1.5 rounded-xl uppercase tracking-widest shadow-sm #{badge_class}"}>
+                            <%= badge_text %>
+                          </span>
+                          <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100"><%= Calendar.strftime(keluhan.inserted_at, "%d %b %Y") %></span>
+                          <a href="/portal/keluhan" class="text-[9px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest mt-2 underline transition-all">Lihat Chat Detail ➝</a>
+                        </div>
+                      </div>
                     <% end %>
-                  </div>
+                  <% end %>
                 </div>
               </div>
             </div>
@@ -263,7 +180,6 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
         </div>
       </section>
     </div>
-    </.navbar>
     """
   end
 
