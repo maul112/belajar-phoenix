@@ -7,7 +7,7 @@ defmodule UpaTikPortalWeb.KeluhanLive do
     user_id = session["user_id"]
     user = UpaTikPortal.Accounts.get_user!(user_id)
     keluhans = Keluhans.list_keluhans_by_user(user_id)
-    
+
     if connected?(socket) do
       for keluhan <- keluhans do
         Keluhans.subscribe(keluhan.id)
@@ -82,7 +82,7 @@ defmodule UpaTikPortalWeb.KeluhanLive do
         "keluhan_id" => keluhan_id,
         "user_id" => socket.assigns.current_user.id
       }
-      
+
       case Keluhans.create_message(attrs) do
         {:ok, _message} ->
           {:noreply, assign(socket, new_messages: Map.put(socket.assigns.new_messages, keluhan_id, ""))}
@@ -106,11 +106,7 @@ defmodule UpaTikPortalWeb.KeluhanLive do
   end
   def render(assigns) do
     ~H"""
-<<<<<<< HEAD
-    <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-5xl px-4 sm:px-6">
-=======
-    <%!-- <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-7xl px-4 sm:px-6">
->>>>>>> 8eea5d7 (project 1 malam)
+    <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-7xl px-4 sm:px-6">
       <div class="flex justify-between h-16">
         <div class="flex items-center gap-3">
           <div class="p-1 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center">
@@ -135,11 +131,7 @@ defmodule UpaTikPortalWeb.KeluhanLive do
         <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl uppercase italic">
           Lapor <span class="text-rose-500">Kendala</span>
         </h1>
-<<<<<<< HEAD
         <p class="text-slate-500 text-lg font-medium max-w-2xl mx-auto">Sampaikan masalah teknis Anda secara detail agar tim kami dapat membantu dengan cepat.</p>
-=======
-        <p class="text-slate-500 dark:text-white text-lg font-medium max-w-7xl mx-auto">Sampaikan masalah teknis Anda secara detail agar tim kami dapat membantu dengan cepat.</p>
->>>>>>> 8eea5d7 (project 1 malam)
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -210,7 +202,7 @@ defmodule UpaTikPortalWeb.KeluhanLive do
                       </div>
                       <h4 class="font-black text-slate-900 text-xl tracking-tight group-hover:text-rose-500 transition-colors uppercase italic"><%= keluhan.subject %></h4>
                       <p class="text-slate-500 mt-3 font-medium leading-relaxed"><%= keluhan.description %></p>
-                      
+
                       <div class="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-200">
                         <h5 class="text-[9px] font-black uppercase tracking-[.2em] text-slate-400 mb-4 block">Riwayat Percakapan:</h5>
                         <div class="space-y-4 mb-4">
@@ -228,7 +220,7 @@ defmodule UpaTikPortalWeb.KeluhanLive do
                             <% end %>
                           <% end %>
                         </div>
-                        
+
                         <form phx-submit="send_message" phx-change="update_message" class="flex gap-2">
                           <input type="hidden" name="keluhan_id" value={keluhan.id} />
                           <input type="text" name={"message_" <> keluhan.id} value={@new_messages[keluhan.id] || ""} placeholder="Ketik balasan untuk Admin..." autocomplete="off"

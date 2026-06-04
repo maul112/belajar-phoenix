@@ -27,11 +27,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
 
   def render(assigns) do
     ~H"""
-<<<<<<< HEAD
-    <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-5xl px-4 sm:px-6">
-=======
     <%!-- <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-7xl px-4 sm:px-6">
->>>>>>> 8eea5d7 (project 1 malam)
       <div class="flex justify-between h-16">
         <div class="flex items-center gap-3">
           <div class="p-1 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center">
@@ -68,7 +64,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
           <div class="h-8 w-2 bg-indigo-600 rounded-full"></div>
           <h2 class="text-2xl font-black text-slate-900 tracking-tight uppercase">Riwayat Aktivasi & Reset</h2>
         </div>
-        
+
         <%= if Enum.empty?(@requests) do %>
           <div class="bg-white rounded-[2.5rem] p-20 text-center border-2 border-dashed border-slate-100 shadow-inner">
             <div class="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -81,7 +77,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
             <%= for request <- @requests do %>
               <div class="group bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-10 hover:shadow-indigo-100 transition-all relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-bl-[100%] translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-700"></div>
-                
+
                 <div class="flex flex-col md:flex-row justify-between gap-8 relative z-10">
                   <div class="space-y-5 flex-1">
                     <div class="flex flex-wrap items-center gap-3">
@@ -97,7 +93,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
                       <h3 class="text-2xl font-black text-slate-900 tracking-tight"><%= request.full_name %></h3>
                       <p class="text-indigo-600 font-bold font-mono text-sm tracking-tight bg-slate-50 inline-block px-3 py-1 rounded-lg border border-slate-100"><%= request.email_requested %></p>
                     </div>
-                    
+
                     <%= if request.status == "disetujui" && request.otp_code do %>
                       <div class="mt-6 p-6 bg-indigo-50 border border-indigo-100 rounded-3xl shadow-inner relative overflow-hidden">
                         <div class="absolute -right-4 -bottom-4 text-indigo-100 opacity-30 rotate-12">
@@ -144,7 +140,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
           <div class="h-8 w-2 bg-rose-500 rounded-full"></div>
           <h2 class="text-2xl font-black text-slate-900 tracking-tight uppercase italic">Status <span class="text-rose-500">Keluhan</span></h2>
         </div>
-        
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div class="lg:col-span-12">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
@@ -153,7 +149,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
                   <h3 class="text-xl font-black text-slate-900 tracking-tight uppercase italic">Riwayat <span class="text-rose-500">Laporan</span></h3>
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><%= Enum.count(@keluhans) %> Laporan</span>
                 </div>
-                
+
                 <div class="space-y-4 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
                   <%= if Enum.empty?(@keluhans) do %>
                     <div class="p-16 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-100">
