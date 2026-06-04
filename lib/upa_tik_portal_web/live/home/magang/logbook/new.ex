@@ -1,0 +1,129 @@
+defmodule UpaTikPortalWeb.Home.Magang.Logbook.New do
+  use UpaTikPortalWeb, :live_view
+
+  on_mount {UpaTikPortalWeb.UserAuth, :mount_current_user}
+
+  alias UpaTikPortal.Recruitment.InternshipParticipationService
+  alias UpaTikPortal.Recruitment.WeeklyLogService
+  alias UpaTikPortal.Recruitment.WeeklyLog
+
+  @impl true
+  def mount(_params, _session, socket) do
+    user = socket.assigns.current_user
+    participation = InternshipParticipationService.get_active_participation_by_user(user.id)
+
+    if is_nil(participation) do
+      {:ok,
+       socket
+       |> put_flash(:error, "Kamu tidak memiliki magang aktif.")
+       |> push_navigate(to: ~p"/portal/magang")}
+    else
+      next_week = WeeklyLogService.next_week_number(participation.id)
+      today = UpaTikPortalWeb.Helpers.TimeHelper.today_wib()
+      week_start = Date.beginning_of_week(today)
+      week_end = Date.end_of_week(today)
+
+      form =
+        %WeeklyLog{}
+        |> WeeklyLog.changeset(%{
+          week_number: next_week,
+          week_start_date: week_start,
+          week_end_date: week_end
+        })
+        |> to_form()
+
+      {:ok,
+       socket
+       |> assign(:page_title, "Tambah Weekly Log")
+       |> assign(:participation, participation)
+       |> assign(:form, form)
+       |> allow_upload(:logbook_pdf, accept: ~w(.pdf), max_entries: 1, max_file_size: 5_000_000)}
+    end
+  end
+
+  @impl true
+  def handle_event("validate", %{"weekly_log" => params}, socket) do
+    form =
+      %WeeklyLog{}
+      |> WeeklyLog.changeset(params)
+      |> Map.put(:action, :validate)
+      |> to_form()
+
+    {:noreply, assign(socket, :form, form)}
+  end
+
+  @impl true
+  def handle_event("save", %{"weekly_log" => params}, socket) do
+    participation = socket.assigns.participation
+
+    case consume_file(socket, :logbook_pdf) do
+      {:ok, pdf_url} ->
+        final_params = Map.put(params, "pdf_url", pdf_url)
+
+        case WeeklyLogService.create_weekly_log(participation.id, final_params) do
+          {:ok, _log} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Weekly log berhasil ditambahkan! 📝")
+             |> push_navigate(to: ~p"/portal/magang/logbook")}
+
+          {:error, msg} when is_binary(msg) ->
+            {:noreply, put_flash(socket, :error, msg)}
+
+          {:error, changeset} ->
+            {:noreply, assign(socket, :form, to_form(changeset))}
+        end
+
+      {:error, _reason} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Gagal mengunggah PDF Logbook. Layanan penyimpanan sedang mengalami gangguan. Silakan coba beberapa saat lagi.")
+         |> assign(:form, to_form(params))}
+    end
+  end
+
+  @impl true
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :logbook_pdf, ref)}
+  end
+
+  defp consume_file(socket, upload_key) do
+    if Enum.empty?(socket.assigns.uploads[upload_key].entries) do
+      {:ok, nil}
+    else
+      bucket = Application.get_env(:waffle, :bucket)
+      uploaded_results =
+        consume_uploaded_entries(socket, upload_key, fn %{path: path}, entry ->
+          filename = "#{Ecto.UUID.generate()}-#{entry.client_name}"
+          file_content = File.read!(path)
+          content_type = entry.client_type
+
+          case ExAws.S3.put_object(
+                bucket,
+                filename,
+                file_content,
+                content_type: content_type
+              )
+              |> ExAws.request() do
+            {:ok, _response} ->
+              url = "http://localhost:9000/#{bucket}/#{filename}"
+              {:ok, {:ok, url}}
+
+            {:error, reason} ->
+              IO.warn("[MinIO Upload GAGAL] Reason: #{inspect(reason)}")
+              {:ok, {:error, reason}}
+          end
+        end)
+
+      case List.first(uploaded_results) do
+        nil -> {:ok, nil}
+        result -> result
+      end
+    end
+  end
+
+  defp error_to_string(:too_large), do: "File terlalu besar (Maks 5MB)"
+  defp error_to_string(:too_many_files), do: "Anda hanya bisa mengunggah 1 file"
+  defp error_to_string(:not_accepted), do: "Format file tidak diterima (Harus PDF)"
+  defp error_to_string(err), do: inspect(err)
+end

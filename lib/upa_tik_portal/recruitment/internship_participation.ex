@@ -14,18 +14,38 @@ defmodule UpaTikPortal.Recruitment.InternshipParticipation do
     field :status, :string, default: "applied"
     field :start_date, :date
     field :end_date, :date
+    field :deleted_at, :utc_datetime
 
-    belongs_to :users, UpaTikPortal.Accounts.User, foreign_key: :user_id, type: :binary_id
+    belongs_to :user, UpaTikPortal.Accounts.User, foreign_key: :user_id, type: :binary_id
     belongs_to :internship_opening, UpaTikPortal.Recruitment.InternshipOpening, foreign_key: :opening_id, type: :binary_id
+    belongs_to :mentor, UpaTikPortal.Accounts.User, foreign_key: :mentor_id, type: :binary_id
+
+    has_many :weekly_logs, UpaTikPortal.Recruitment.WeeklyLog, foreign_key: :participation_id
+    has_many :presences, UpaTikPortal.Recruitment.Presence, foreign_key: :participation_id
+    has_many :intern_complaints, UpaTikPortal.Recruitment.InternComplaint, foreign_key: :participation_id
 
     timestamps(type: :utc_datetime)
   end
   def changeset(internship_participation, attrs) do
     internship_participation
     |> cast(attrs, [:cv_url, :portfolio_url, :surat_pengantar_url, :transkrip_nilai_url, :university, :major, :status, :start_date, :end_date, :user_id, :opening_id])
-    |> validate_required([:cv_url, :portfolio_url, :surat_pengantar_url, :transkrip_nilai_url, :university, :major, :start_date, :end_date, :user_id, :opening_id])
+    |> validate_required([:university, :major, :start_date, :end_date, :user_id, :opening_id])
     |> validate_start_date()
     |> validate_end_date()
+  end
+
+  @valid_statuses ~w(applied interview accepted rejected)
+
+  def status_changeset(internship_participation, attrs) do
+    internship_participation
+    |> cast(attrs, [:status])
+    |> validate_required([:status])
+    |> validate_inclusion(:status, @valid_statuses)
+  end
+
+  def mentor_changeset(internship_participation, attrs) do
+    internship_participation
+    |> cast(attrs, [:mentor_id])
   end
 
   defp validate_start_date(changeset) do

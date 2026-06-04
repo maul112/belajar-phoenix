@@ -1,0 +1,63 @@
+<.navbarAdmin active_tab={:intern}>
+  <Layouts.flash_group flash={@flash} />
+
+  <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">Intern Aktif</h1>
+        <p class="text-slate-500 text-sm mt-1">Daftar peserta magang yang sedang berjalan</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200">
+          <tr>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Peserta</th>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Posisi</th>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Mentor</th>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Periode</th>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Kehadiran</th>
+            <th class="px-5 py-3.5"></th>
+          </tr>
+        </thead>
+        <tbody id="interns-table" phx-update="stream" class="divide-y divide-slate-100">
+          <tr class="hidden only:table-row">
+            <td colspan="6" class="text-center text-slate-500 py-12">Belum ada intern aktif.</td>
+          </tr>
+          <%= for {id, intern} <- @streams.interns do %>
+            <tr id={id} class="hover:bg-slate-50 transition-colors">
+              <td class="px-5 py-3.5">
+                <p class="font-medium text-slate-900">{intern.user.name}</p>
+                <p class="text-xs text-slate-500">{intern.university} · {intern.major}</p>
+              </td>
+              <td class="px-5 py-3.5">
+                <p class="text-slate-700">{intern.internship_opening.title}</p>
+                <p class="text-xs text-slate-400">{intern.internship_opening.department}</p>
+              </td>
+              <td class="px-5 py-3.5 text-slate-600">
+                <%= if intern.mentor do %>
+                  {intern.mentor.name}
+                <% else %>
+                  <span class="text-slate-400 italic">Belum ditentukan</span>
+                <% end %>
+              </td>
+              <td class="px-5 py-3.5 text-slate-600 text-xs">
+                {Calendar.strftime(intern.start_date, "%d %b %Y")} –
+                {Calendar.strftime(intern.end_date, "%d %b %Y")}
+              </td>
+              <td class="px-5 py-3.5">
+                <span class="font-semibold text-slate-700">{attendance_rate(intern.id)}</span>
+              </td>
+              <td class="px-5 py-3.5 text-right">
+                <.link navigate={~p"/admin/intern/#{intern.id}"} class="text-blue-600 hover:text-blue-800 font-medium text-xs">
+                  Detail →
+                </.link>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</.navbarAdmin>

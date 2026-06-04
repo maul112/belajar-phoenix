@@ -141,7 +141,7 @@ defmodule UpaTikPortalWeb.RequestLive do
 
   def render(assigns) do
     ~H"""
-    <%!-- <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-5xl px-4 sm:px-6">
+    <%!-- <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-7xl px-4 sm:px-6">
       <div class="flex justify-between h-16">
         <div class="flex items-center gap-3">
           <div class="p-1 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center">
@@ -162,12 +162,12 @@ defmodule UpaTikPortalWeb.RequestLive do
     </nav> --%>
     <.navbar active_tab={:ajukan} current_user={@current_user}>
 
-    <div class="max-w-4xl mx-auto space-y-12 pb-20">
+    <div class="max-w-7xl mx-auto space-y-12 pb-20">
       <div class="text-center space-y-3">
         <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight sm:text-5xl uppercase italic">
           Pengajuan <span class="text-indigo-600">Aktivasi</span>
         </h1>
-        <p class="text-slate-500 dark:text-white text-lg font-medium max-w-2xl mx-auto">Lengkapi data di bawah ini untuk pemrosesan akun email kampus Anda secara profesional.</p>
+        <p class="text-slate-500 dark:text-white text-lg font-medium max-w-7xl mx-auto">Lengkapi data di bawah ini untuk pemrosesan akun email kampus Anda secara profesional.</p>
       </div>
 
       <%= if @submitted do %>

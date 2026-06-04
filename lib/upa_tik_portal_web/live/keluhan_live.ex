@@ -106,7 +106,11 @@ defmodule UpaTikPortalWeb.KeluhanLive do
   end
   def render(assigns) do
     ~H"""
+<<<<<<< HEAD
     <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-5xl px-4 sm:px-6">
+=======
+    <%!-- <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-7xl px-4 sm:px-6">
+>>>>>>> 8eea5d7 (project 1 malam)
       <div class="flex justify-between h-16">
         <div class="flex items-center gap-3">
           <div class="p-1 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center">
@@ -126,12 +130,16 @@ defmodule UpaTikPortalWeb.KeluhanLive do
       </div>
     </nav>
 
-    <div class="max-w-4xl mx-auto space-y-12 pb-20">
+    <div class="max-w-7xl mx-auto space-y-12 pb-20">
       <div class="text-center space-y-3">
         <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl uppercase italic">
           Lapor <span class="text-rose-500">Kendala</span>
         </h1>
+<<<<<<< HEAD
         <p class="text-slate-500 text-lg font-medium max-w-2xl mx-auto">Sampaikan masalah teknis Anda secara detail agar tim kami dapat membantu dengan cepat.</p>
+=======
+        <p class="text-slate-500 dark:text-white text-lg font-medium max-w-7xl mx-auto">Sampaikan masalah teknis Anda secara detail agar tim kami dapat membantu dengan cepat.</p>
+>>>>>>> 8eea5d7 (project 1 malam)
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">

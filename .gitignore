@@ -41,4 +41,12 @@ npm-debug.log
 !.env.example
 
 # Uploaded files
+<<<<<<< HEAD
 /priv/static/uploads/
+=======
+/priv/static/uploads/
+
+implementation_plan.md
+AGENTS.md
+test_qr.exs
+>>>>>>> 8eea5d7 (project 1 malam)

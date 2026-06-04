@@ -1,0 +1,190 @@
+defmodule UpaTikPortalWeb.Mentor.PresensiLive.Index do
+  use UpaTikPortalWeb, :live_view
+
+  alias UpaTikPortal.Recruitment.PresenceService
+  alias UpaTikPortal.Recruitment.QrCodeService
+  alias UpaTikPortal.Recruitment.InternshipParticipationService
+
+  on_mount {UpaTikPortalWeb.UserAuth, :mount_current_user}
+
+  @impl true
+  def mount(_params, _session, socket) do
+    user = socket.assigns.current_user
+    today = UpaTikPortalWeb.Helpers.TimeHelper.today_wib()
+
+    # Ambil partisipasi bimbingan mentor
+    bimbingan = InternshipParticipationService.list_mentor_interns(user.id)
+    bimbingan_ids = Enum.map(bimbingan, & &1.id)
+
+    # Kelompokkan berdasarkan lowongan
+    grouped_bimbingan = Enum.group_by(bimbingan, & &1.internship_opening.title)
+
+    # Ambil presensi hari ini tapi filter hanya yang jadi bimbingan mentor ini
+    presences =
+      PresenceService.list_by_date(today)
+      |> Enum.filter(&(&1.participation_id in bimbingan_ids))
+
+     {:ok,
+      socket
+      |> assign(:page_title, "Scanner Presensi Intern")
+      |> assign(:today, today)
+      |> assign(:scan_result, nil)
+      |> assign(:scan_mode, "check_in")
+      |> assign(:bimbingan_ids, bimbingan_ids)
+      |> assign(:grouped_bimbingan, grouped_bimbingan)
+      |> assign(:selected_category, "Semua")
+      |> assign(:show_manual_modal, false)
+      |> stream(:presences, presences)}
+  end
+
+  @impl true
+  def handle_event("set_mode", %{"mode" => mode}, socket) do
+    {:noreply, assign(socket, :scan_mode, mode)}
+  end
+
+  @impl true
+  def handle_event("open_manual_modal", _, socket) do
+    {:noreply, assign(socket, show_manual_modal: true, edit_presence: nil)}
+  end
+
+  @impl true
+  def handle_event("close_manual_modal", _, socket) do
+    {:noreply, assign(socket, :show_manual_modal, false)}
+  end
+
+  @impl true
+  def handle_event("select_category", %{"category" => cat}, socket) do
+    {:noreply, assign(socket, :selected_category, cat)}
+  end
+
+  @impl true
+  def handle_event("edit_presence", %{"id" => id}, socket) do
+    presence = PresenceService.get_presence!(id)
+    {:noreply, assign(socket, show_manual_modal: true, edit_presence: presence)}
+  end
+
+  @impl true
+  def handle_event("delete_presence", %{"id" => id}, socket) do
+    presence = PresenceService.get_presence!(id)
+    case PresenceService.delete_presence(presence) do
+      {:ok, _} ->
+        {:noreply, 
+         socket 
+         |> put_flash(:info, "Presensi berhasil dihapus.")
+         |> stream_delete(:presences, presence)}
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Gagal menghapus presensi.")}
+    end
+  end
+
+  @impl true
+  def handle_event("save_manual", params, socket) do
+    p_id = params["participation_id"]
+    status = params["status"]
+    notes = params["notes"]
+    check_in = params["check_in"]
+    check_out = params["check_out"]
+
+    case PresenceService.set_manual_presence(p_id, socket.assigns.today, status, notes, check_in, check_out) do
+      {:ok, presence} ->
+        presence = PresenceService.get_presence!(presence.id) |> UpaTikPortal.Repo.preload(participation: [:user])
+        # Gunakan stream_insert untuk update list
+        {:noreply,
+         socket
+         |> put_flash(:info, "Presensi manual berhasil disimpan.")
+         |> assign(:show_manual_modal, false)
+         |> stream_insert(:presences, presence, at: 0)}
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Gagal menyimpan presensi manual.")}
+    end
+  end
+
+  @impl true
+  def handle_event("scan_success", %{"token" => token}, socket) do
+    case QrCodeService.verify_token(token) do
+      {:ok, participation_id} ->
+        # Cek apakah dia bimbingan mentor ini
+        if participation_id in socket.assigns.bimbingan_ids do
+          process_scan(socket, participation_id, socket.assigns.scan_mode)
+        else
+          {:reply, %{status: "error"},
+           socket
+           |> assign(:scan_result, {:error, "Gagal: Peserta magang ini bukan bimbingan Anda."})}
+        end
+
+      {:error, :invalid_or_expired_token} ->
+        {:reply, %{status: "error"},
+         socket
+         |> assign(:scan_result, {:error, "QR Code tidak valid atau sudah kedaluwarsa!"})}
+    end
+  end
+
+  defp process_scan(socket, participation_id, scan_mode) do
+    today_presence = PresenceService.get_today(participation_id)
+
+    if scan_mode == "check_in" do
+      if is_nil(today_presence) || is_nil(today_presence.check_in) do
+        case PresenceService.check_in(participation_id) do
+          {:ok, presence} ->
+            presence = PresenceService.get_presence!(presence.id) |> UpaTikPortal.Repo.preload(participation: [:user])
+            {:reply, %{status: "ok"},
+             socket
+             |> put_flash(:info, "Berhasil Check-in: #{presence.participation.user.name}")
+             |> assign(:scan_result, {:ok, "Check-in berhasil untuk #{presence.participation.user.name}"})
+             |> stream_insert(:presences, presence, at: 0)}
+
+          {:error, _} ->
+            {:reply, %{status: "error"},
+             socket
+             |> assign(:scan_result, {:error, "Gagal Check-in. Coba lagi."})}
+        end
+      else
+        {:reply, %{status: "error"},
+         socket
+         |> assign(:scan_result, {:error, "Gagal: Peserta ini sudah Check-in sebelumnya."})}
+      end
+    else
+      # scan_mode == "check_out"
+      if is_nil(today_presence) || is_nil(today_presence.check_in) do
+        {:reply, %{status: "error"},
+         socket
+         |> assign(:scan_result, {:error, "Gagal: Peserta ini belum Check-in."})}
+      else
+        if not is_nil(today_presence.check_out) do
+           {:reply, %{status: "error"},
+            socket
+            |> assign(:scan_result, {:error, "Gagal: Peserta ini sudah Check-out sebelumnya."})}
+        else
+          case PresenceService.check_out(participation_id) do
+            {:ok, presence} ->
+              presence = PresenceService.get_presence!(presence.id) |> UpaTikPortal.Repo.preload(participation: [:user])
+              {:reply, %{status: "ok"},
+               socket
+               |> put_flash(:info, "Berhasil Check-out: #{presence.participation.user.name}")
+               |> assign(:scan_result, {:ok, "Check-out berhasil untuk #{presence.participation.user.name}"})
+               |> stream_insert(:presences, presence)}
+
+            {:error, _} ->
+              {:reply, %{status: "error"},
+               socket
+               |> assign(:scan_result, {:error, "Gagal Check-out. Coba lagi."})}
+          end
+        end
+      end
+    end
+  end
+
+
+
+  defp status_label("present"), do: "Hadir"
+  defp status_label("sick"), do: "Sakit"
+  defp status_label("permit"), do: "Izin"
+  defp status_label("absent"), do: "Alpha"
+  defp status_label(_), do: "-"
+
+  defp status_color("present"), do: "bg-green-100 text-green-700"
+  defp status_color("sick"), do: "bg-blue-100 text-blue-700"
+  defp status_color("permit"), do: "bg-yellow-100 text-yellow-700"
+  defp status_color("absent"), do: "bg-red-100 text-red-700"
+  defp status_color(_), do: "bg-gray-100 text-gray-600"
+end

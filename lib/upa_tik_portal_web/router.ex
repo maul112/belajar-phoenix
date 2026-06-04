@@ -25,6 +25,14 @@ defmodule UpaTikPortalWeb.Router do
     plug :require_admin
   end
 
+  pipeline :require_mentor_access do
+    plug :require_mentor
+  end
+
+  pipeline :require_mahasiswa_access do
+    plug :require_mahasiswa
+  end
+
   # ─── Public routes ────────────────────────────────────────────────────────
   scope "/", UpaTikPortalWeb do
     pipe_through :browser
@@ -44,13 +52,13 @@ defmodule UpaTikPortalWeb.Router do
 
   # ─── Authenticated mahasiswa routes ───────────────────────────────────────
   scope "/portal", UpaTikPortalWeb do
-    pipe_through [:browser, :require_auth]
+    pipe_through [:browser, :require_auth, :require_mahasiswa_access]
 
     get "/", PortalController, :index
     live "/ajukan", RequestLive, :index
     live "/status", RequestStatusLive, :index
     live "/keluhan", KeluhanLive, :index
-
+    
     live "/", Home.Index, :index
     live "/lowongan", Home.Lowongan.Index, :index
     live "/lowongan/:id", Home.Lowongan.Detail, :show
@@ -58,6 +66,13 @@ defmodule UpaTikPortalWeb.Router do
 
     live "/profile", Home.Setting.Profile, :index
     live "/setting", Home.Setting.Index, :index
+
+    # ─── Magang routes ────────────────────────────────────────────
+    live "/magang", Home.Magang.Index, :index
+    live "/magang/logbook", Home.Magang.Logbook.Index, :index
+    live "/magang/logbook/new", Home.Magang.Logbook.New, :new
+    live "/magang/presensi", Home.Magang.Presensi.Index, :index
+    live "/magang/complaint", Home.Magang.Complaint.Index, :index
   end
 
   # ─── Admin-only routes ────────────────────────────────────────────────────
@@ -73,6 +88,27 @@ defmodule UpaTikPortalWeb.Router do
     live "/lowongan", LowonganLive.Index, :index
     live "/lowongan/new", LowonganLive.New, :new
     live "/lowongan/:id/edit", LowonganLive.Edit, :edit
+
+    live "/pelamar", PelamarLive.Index, :index
+    live "/pelamar/:id", PelamarLive.Detail, :show
+
+    live "/intern", InternLive.Index, :index
+    live "/intern/:id", InternLive.Show, :show
+    live "/presensi", PresensiLive.Index, :index
+  end
+  
+  scope "/admin", UpaTikPortalWeb do
+    pipe_through [:browser, :require_auth, :require_admin_access]
+    get "/presensi/export", PresenceCsvController, :export
+  end
+
+  # ─── Mentor-only routes ───────────────────────────────────────────────────
+  scope "/mentor", UpaTikPortalWeb.Mentor do
+    pipe_through [:browser, :require_auth, :require_mentor_access]
+
+    live "/", DashboardLive, :index
+    live "/intern/:id", InternLive.Show, :show
+    live "/presensi", PresensiLive.Index, :index
   end
 
   scope "/storage", UpaTikPortalWeb do

@@ -7,7 +7,7 @@ defmodule UpaTikPortalWeb.LoginLive do
     if current_user do
       {:ok, push_navigate(socket, to: redirect_path(current_user))}
     else
-      {:ok, assign(socket, page_title: "Login – UPA TIK Portal", current_user: nil)}
+      {:ok, assign(socket, :page_title, "Login - UPA TIK Portal")}
     end
   end
 
@@ -18,7 +18,8 @@ defmodule UpaTikPortalWeb.LoginLive do
   defp get_user_from_session(_), do: nil
 
   defp redirect_path(%{role: "admin"}), do: ~p"/admin"
-  defp redirect_path(_), do: ~p"/portal/ajukan"
+  defp redirect_path(%{role: "mentor"}), do: ~p"/mentor"
+  defp redirect_path(_), do: ~p"/portal"
 
   def render(assigns) do
     ~H"""
@@ -83,6 +84,7 @@ defmodule UpaTikPortalWeb.LoginLive do
           </p>
         </div>
       </div>
+
     </div>
     """
   end

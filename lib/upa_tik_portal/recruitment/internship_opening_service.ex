@@ -7,7 +7,7 @@ defmodule UpaTikPortal.Recruitment.InternshipOpeningService do
     InternshipOpening
     |> filter_active(opts[:is_active])
     |> search_query(opts[:search])
-    |> order_by(desc: :inserted_at)
+    |> order_by(asc: :closing_date)
     |> Repo.all()
   end
 
@@ -19,6 +19,14 @@ defmodule UpaTikPortal.Recruitment.InternshipOpeningService do
     # Mencari di judul atau departemen
     from o in query,
       where: ilike(o.title, ^"%#{search_term}%") or ilike(o.department, ^"%#{search_term}%")
+  end
+
+  def list_top_urgent_openings(limit \\ 3) do
+    InternshipOpening
+    |> where([o], o.is_active == true and o.quota > 0)
+    |> order_by([o], asc: o.quota)
+    |> limit(^limit)
+    |> Repo.all()
   end
 
   def get_internship_opening!(id), do: Repo.get!(InternshipOpening, id)

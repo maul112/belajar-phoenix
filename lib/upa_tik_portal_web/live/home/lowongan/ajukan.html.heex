@@ -34,6 +34,9 @@
                         <.error :for={err <- @form[:cv_url].errors}>
                             <%= translate_error(err) %>
                         </.error>
+                        <.error :for={err <- @uploads.cv.errors}>
+                            <%= error_to_string(err) %>
+                        </.error>
                     </div>
 
                     <!-- Bagian Surat Pengantar -->
@@ -47,8 +50,11 @@
                                 class="block w-full text-sm text-zinc-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-zinc-800 cursor-pointer file:transition-all"
                             />
                         </div>
-                        <.error :for={err <- @form[:cv_url].errors}>
+                        <.error :for={err <- @form[:surat_pengantar_url].errors}>
                             <%= translate_error(err) %>
+                        </.error>
+                        <.error :for={err <- @uploads.surat_pengantar.errors}>
+                            <%= error_to_string(err) %>
                         </.error>
                     </div>        
 
@@ -59,12 +65,15 @@
                         </label>
                         <div class="flex items-center justify-center rounded-lg border border-dashed border-zinc-300 px-4 py-3 hover:border-zinc-400 transition-colors bg-zinc-50/50">
                             <.live_file_input 
-                                upload={@uploads.transkrip} 
+                                upload={@uploads.transkrip}
                                 class="block w-full text-sm text-zinc-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-zinc-800 cursor-pointer file:transition-all"
                             />
                         </div>
-                        <.error :for={err <- @form[:cv_url].errors}>
+                        <.error :for={err <- @form[:transkrip_nilai_url].errors}>
                             <%= translate_error(err) %>
+                        </.error>
+                        <.error :for={err <- @uploads.transkrip.errors}>
+                            <%= error_to_string(err) %>
                         </.error>
                     </div>
 
@@ -113,8 +122,11 @@
                                     class="block w-full text-sm text-zinc-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-zinc-800 cursor-pointer file:transition-all"
                                 />
                             </div>
-                            <.error :for={err <- @form[:cv_url].errors}>
+                            <.error :for={err <- @form[:portfolio_url].errors}>
                                 <%= translate_error(err) %>
+                            </.error>
+                            <.error :for={err <- @uploads.portfolio_file.errors}>
+                                <%= error_to_string(err) %>
                             </.error>
                         <% end %>
                         </div>

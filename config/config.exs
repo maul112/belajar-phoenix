@@ -9,7 +9,8 @@ import Config
 
 config :upa_tik_portal,
   ecto_repos: [UpaTikPortal.Repo],
-  generators: [timestamp_type: :utc_datetime, binary_id: true]
+  generators: [timestamp_type: :utc_datetime, binary_id: true],
+  qr_secret_salt: "presensi_utm_magang_2026"
 
 # Configure the endpoint
 config :upa_tik_portal, UpaTikPortalWeb.Endpoint,

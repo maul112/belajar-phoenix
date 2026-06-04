@@ -57,6 +57,7 @@ defmodule UpaTikPortal.MixProject do
        app: false,
        compile: false,
        depth: 1},
+      {:qr_code, "~> 3.0.0"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:jason, "~> 1.2"},

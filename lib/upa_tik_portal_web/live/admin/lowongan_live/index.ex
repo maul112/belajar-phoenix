@@ -7,12 +7,10 @@ defmodule UpaTikPortalWeb.Admin.LowonganLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     lowongans = InternshipOpeningService.list_internship_openings()
-    # for opening <- lowongans do
-    #   IO.inspect(opening, label: "Lowongan")
-    # end
     {:ok,
       socket
       |> assign(:any_lowongan?, lowongans != [])
+      |> assign(:search, "")
       |> stream(:lowongans, lowongans)
     }
   end
@@ -20,6 +18,16 @@ defmodule UpaTikPortalWeb.Admin.LowonganLive.Index do
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  @impl true
+  def handle_event("filter", %{"search" => search}, socket) do
+    lowongans = InternshipOpeningService.list_internship_openings(search: search)
+    {:noreply,
+     socket
+     |> assign(:any_lowongan?, lowongans != [])
+     |> assign(:search, search)
+     |> stream(:lowongans, lowongans, reset: true)}
   end
 
   def apply_action(socket, :edit, %{"id" => id}) do

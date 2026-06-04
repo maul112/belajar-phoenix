@@ -27,7 +27,11 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
 
   def render(assigns) do
     ~H"""
+<<<<<<< HEAD
     <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-5xl px-4 sm:px-6">
+=======
+    <%!-- <nav class="sticky top-4 z-50 bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 transition-all mb-8 rounded-2xl mx-auto max-w-7xl px-4 sm:px-6">
+>>>>>>> 8eea5d7 (project 1 malam)
       <div class="flex justify-between h-16">
         <div class="flex items-center gap-3">
           <div class="p-1 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center">
@@ -47,7 +51,7 @@ defmodule UpaTikPortalWeb.RequestStatusLive do
       </div>
     </nav>
 
-    <div class="max-w-4xl mx-auto space-y-16 pb-20">
+    <div class="max-w-7xl mx-auto space-y-16 pb-20">
       <div class="flex flex-col md:flex-row justify-between items-center bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 gap-6">
         <div class="text-center md:text-left">
           <h1 class="text-3xl font-black text-slate-900 tracking-tight uppercase italic">Monitor <span class="text-indigo-600">Layanan</span></h1>

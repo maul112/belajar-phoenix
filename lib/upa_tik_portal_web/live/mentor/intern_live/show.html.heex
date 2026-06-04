@@ -1,0 +1,142 @@
+<.navbarMentor active_tab={:dashboard}>
+  <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    
+    <div class="mb-2">
+      <.link navigate={~p"/mentor"} class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-blue-600 transition-colors">
+        <.icon name="hero-arrow-left" class="w-4 h-4" />
+        Kembali ke Dashboard
+      </.link>
+    </div>
+
+    <%!-- Info Header --%>
+    <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl p-6 text-white">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold">
+          {String.at(@participation.user.name, 0)}
+        </div>
+        <div>
+          <h1 class="text-xl font-bold">{@participation.user.name}</h1>
+          <p class="text-indigo-200 text-sm">{@participation.university} · {@participation.major}</p>
+          <p class="text-indigo-200 text-sm mt-0.5">{@participation.internship_opening.title}</p>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-4 border-t border-white/20 grid grid-cols-4 gap-3 text-center">
+        <div>
+          <p class="text-xl font-bold">{@presence_stats.present}</p>
+          <p class="text-xs text-indigo-200">Hadir</p>
+        </div>
+        <div>
+          <p class="text-xl font-bold">{@presence_stats.sick}</p>
+          <p class="text-xs text-indigo-200">Sakit</p>
+        </div>
+        <div>
+          <p class="text-xl font-bold">{@presence_stats.permit}</p>
+          <p class="text-xs text-indigo-200">Izin</p>
+        </div>
+        <div>
+          <p class="text-xl font-bold">{@presence_stats.absent}</p>
+          <p class="text-xs text-indigo-200">Alpha</p>
+        </div>
+      </div>
+    </div>
+
+    <%!-- Logbook + Feedback --%>
+    <div>
+      <h2 class="text-lg font-bold text-slate-900 mb-4">Logbook Mingguan</h2>
+      <div id="logs-mentor" phx-update="stream" class="space-y-4">
+        <div class="hidden only:text-center only:py-10 only:text-slate-500 only:text-sm">
+          Intern belum mengisi weekly log.
+        </div>
+        <%= for {id, log} <- @streams.logs do %>
+          <div id={id} class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                Minggu ke-{log.week_number}
+              </span>
+              <span class="text-xs text-slate-400">
+                {Calendar.strftime(log.week_start_date, "%d %b")} – {Calendar.strftime(log.week_end_date, "%d %b %Y")}
+              </span>
+            </div>
+
+            <h3 class="font-semibold text-slate-900 text-base">{log.activity_title}</h3>
+            <%= if log.activity_description do %>
+              <p class="text-sm text-slate-600 mt-1 leading-relaxed">{log.activity_description}</p>
+            <% end %>
+
+            <%!-- Feedback section --%>
+            <%= if @editing_log_id == to_string(log.id) do %>
+              <div class="mt-4 bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+                <p class="text-xs font-semibold text-indigo-700 mb-2">Tulis Feedback</p>
+                <form phx-submit="save_feedback" class="space-y-3">
+                  <input type="hidden" name="log_id" value={log.id} />
+                  <textarea
+                    name="feedback"
+                    id={"feedback-textarea-#{log.id}"}
+                    rows="3"
+                    placeholder="Tulis feedback kamu untuk logbook ini..."
+                    class="w-full rounded-xl border border-indigo-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  >{@feedback_text}</textarea>
+                  <div class="flex gap-2 justify-end">
+                    <button type="button" id={"cancel-feedback-#{log.id}"} phx-click="cancel_feedback" phx-value-log_id={log.id} class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                      Batal
+                    </button>
+                    <button type="submit" id={"save-feedback-#{log.id}"} class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-1.5 rounded-lg transition-colors">
+                      Simpan Feedback
+                    </button>
+                  </div>
+                </form>
+              </div>
+            <% else %>
+              <%= if log.feedback do %>
+                <div class="mt-3 bg-green-50 border border-green-200 rounded-xl p-3">
+                  <p class="text-xs font-semibold text-green-700 mb-1">Feedback kamu</p>
+                  <p class="text-sm text-green-800">{log.feedback}</p>
+                </div>
+              <% end %>
+              <button
+                id={"edit-feedback-#{log.id}"}
+                phx-click="edit_feedback"
+                phx-value-log_id={log.id}
+                class="mt-3 inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+              >
+                <.icon name={if log.feedback, do: "hero-pencil-square", else: "hero-chat-bubble-left"} class="w-3.5 h-3.5" />
+                {if log.feedback, do: "Edit Feedback", else: "Beri Feedback"}
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%!-- Presensi --%>
+    <div>
+      <h2 class="text-lg font-bold text-slate-900 mb-4">Riwayat Presensi</h2>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div id="presences-mentor" phx-update="stream" class="divide-y divide-slate-100">
+          <div class="hidden only:text-center only:py-10 only:text-slate-500 only:text-sm">
+            Belum ada data presensi.
+          </div>
+          <%= for {id, presence} <- @streams.presences do %>
+            <div id={id} class="flex items-center justify-between px-5 py-3 hover:bg-slate-50">
+              <p class="text-sm text-slate-700">
+                {Calendar.strftime(presence.date, "%A, %d %b %Y")}
+              </p>
+              <div class="flex items-center gap-3">
+                <p class="text-xs text-slate-400">
+                  <%= if presence.check_in, do: Calendar.strftime(presence.check_in, "%H:%M"), else: "--:--" %>
+                  /
+                  <%= if presence.check_out, do: Calendar.strftime(presence.check_out, "%H:%M"), else: "--:--" %>
+                </p>
+                <span class={["text-xs font-semibold px-2.5 py-1 rounded-full", presence_status_color(presence.status)]}>
+                  {presence_status_label(presence.status)}
+                </span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</.navbarMentor>
