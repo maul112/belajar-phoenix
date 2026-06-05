@@ -14,13 +14,30 @@ defmodule UpaTikPortal.Recruitment.PresenceService do
     |> Repo.all()
   end
 
-  @doc "Daftar semua presensi semua intern pada tanggal tertentu (untuk admin)"
-  def list_by_date(date) do
-    Presence
+  @doc "Daftar semua presensi semua intern pada tanggal tertentu (untuk admin/mentor)"
+  def list_by_date(date, opts \\ []) do
+    query = Presence
     |> where([p], p.date == ^date)
-    |> preload(participation: [:user])
+    |> join(:inner, [p], part in assoc(p, :participation))
+    |> join(:inner, [p, part], u in assoc(part, :user))
+    |> join(:inner, [p, part, u], o in assoc(part, :internship_opening))
+    |> preload([p, part, u, o], participation: {part, user: u, internship_opening: o})
     |> order_by([p], asc: p.inserted_at)
-    |> Repo.all()
+
+    query = if opts[:search] && opts[:search] != "" do
+      search_term = "%#{opts[:search]}%"
+      where(query, [p, part, u, o], ilike(u.name, ^search_term))
+    else
+      query
+    end
+
+    query = if opts[:opening] && opts[:opening] != "" do
+      where(query, [p, part, u, o], o.title == ^opts[:opening])
+    else
+      query
+    end
+
+    Repo.all(query)
   end
 
   @doc "Ambil presensi hari ini untuk satu partisipasi, jika ada"

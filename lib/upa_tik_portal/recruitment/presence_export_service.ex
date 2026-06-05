@@ -8,7 +8,7 @@ defmodule UpaTikPortal.Recruitment.PresenceExportService do
     # Ambil semua data presensi untuk intern yang diterima
     interns = UpaTikPortal.Recruitment.InternshipParticipationService.list_active_interns()
     
-    header = "NIM,Nama,Lowongan,Tanggal,Check In,Check Out,Status,Notes\n"
+    header = "Universitas,Jurusan,Nama,Lowongan,Tanggal,Check In,Check Out,Status,Notes\n"
     
     rows = Enum.map(interns, fn intern ->
       presences = PresenceService.list_by_participation(intern.id)
@@ -21,7 +21,7 @@ defmodule UpaTikPortal.Recruitment.PresenceExportService do
         # Escape quotes di csv
         escaped_notes = "\"#{String.replace(notes, "\"", "\"\"")}\""
         
-        "#{intern.user.nim},#{intern.user.name},#{intern.internship_opening.title},#{Date.to_string(p.date)},#{check_in_str},#{check_out_str},#{p.status},#{escaped_notes}"
+        "\"#{intern.university}\",\"#{intern.major}\",\"#{intern.user.name}\",\"#{intern.internship_opening.title}\",#{Date.to_string(p.date)},#{check_in_str},#{check_out_str},#{p.status},#{escaped_notes}"
       end)
       |> Enum.join("\n")
     end)

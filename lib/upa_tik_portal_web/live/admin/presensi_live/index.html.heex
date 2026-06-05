@@ -52,19 +52,36 @@
 
                 <!-- Presensi List Section -->
                 <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm h-fit">
-                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                        <h3 class="font-bold text-slate-900 flex items-center gap-2">
-                            <.icon name="hero-users" class="w-5 h-5 text-indigo-600" />
-                            Hari Ini
-                        </h3>
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
-                                Real-time
-                            </span>
+                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                                    <.icon name="hero-users" class="w-5 h-5 text-indigo-600" />
+                                    Hari Ini
+                                </h3>
+                                <span class="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full hidden sm:block">
+                                    Real-time
+                                </span>
+                            </div>
                             <button phx-click="open_manual_modal" class="text-xs font-semibold px-3 py-1.5 bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 transition-colors">
                                 + Absen Manual
                             </button>
                         </div>
+                        
+                        <form phx-change="filter_presences" class="flex flex-col sm:flex-row gap-2 w-full">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <.icon name="hero-magnifying-glass" class="h-4 w-4 text-slate-400" />
+                                </div>
+                                <input type="text" name="search" value={@search} phx-debounce="300" placeholder="Cari nama..." class="block w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-blue-500 focus:border-blue-500" />
+                            </div>
+                            <select name="opening" class="block w-full sm:w-auto py-1.5 px-3 border border-slate-300 bg-white rounded-lg text-xs focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Semua Lowongan</option>
+                                <%= for {title, _} <- @grouped_interns do %>
+                                    <option value={title} selected={@opening == title}><%= title %></option>
+                                <% end %>
+                            </select>
+                        </form>
                     </div>
                     
                     <div class="divide-y divide-slate-100" id="presences" phx-update="stream">
@@ -75,13 +92,9 @@
                         <%= for {id, presence} <- @streams.presences do %>
                             <div id={id} class="p-4 flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <%= if presence.participation.user.avatar_url do %>
-                                      <img src={presence.participation.user.avatar_url} alt={presence.participation.user.name} class="w-10 h-10 rounded-full object-cover border border-slate-200" />
-                                    <% else %>
-                                      <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">
-                                        {String.at(presence.participation.user.name, 0)}
-                                      </div>
-                                    <% end %>
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">
+                                      {String.at(presence.participation.user.name, 0)}
+                                    </div>
                                     <div>
                                         <p class="font-semibold text-slate-900 text-sm"><%= presence.participation.user.name %></p>
                                         <p class="text-xs text-slate-500 mt-1">
@@ -121,6 +134,11 @@
             </button>
           </div>
           <form phx-submit="save_manual" class="p-6 space-y-4">
+            <%= if @manual_error do %>
+              <div class="p-3 bg-red-50 text-red-700 text-sm font-medium rounded-lg border border-red-100">
+                <%= @manual_error %>
+              </div>
+            <% end %>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">Filter Kategori</label>
               <div class="flex flex-wrap gap-2 mb-4">
@@ -139,7 +157,13 @@
                 <%= for {title, interns} <- @grouped_interns do %>
                   <%= if @selected_category == "Semua" or @selected_category == title do %>
                     <%= for intern <- interns do %>
-                      <option value={intern.id} selected={@edit_presence && @edit_presence.participation_id == intern.id}><%= intern.user.name %></option>
+                      <%= if is_nil(@edit_presence) and intern.id not in @already_present_ids do %>
+                        <option value={intern.id}><%= intern.user.name %></option>
+                      <% else %>
+                        <%= if @edit_presence && @edit_presence.participation_id == intern.id do %>
+                          <option value={intern.id} selected><%= intern.user.name %></option>
+                        <% end %>
+                      <% end %>
                     <% end %>
                   <% end %>
                 <% end %>

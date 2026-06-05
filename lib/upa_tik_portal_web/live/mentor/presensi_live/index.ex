@@ -34,6 +34,10 @@ defmodule UpaTikPortalWeb.Mentor.PresensiLive.Index do
       |> assign(:grouped_bimbingan, grouped_bimbingan)
       |> assign(:selected_category, "Semua")
       |> assign(:show_manual_modal, false)
+      |> assign(:manual_error, nil)
+      |> assign(:search, "")
+      |> assign(:opening, "")
+      |> assign(:already_present_ids, [])
       |> stream(:presences, presences)}
   end
 
@@ -44,12 +48,15 @@ defmodule UpaTikPortalWeb.Mentor.PresensiLive.Index do
 
   @impl true
   def handle_event("open_manual_modal", _, socket) do
-    {:noreply, assign(socket, show_manual_modal: true, edit_presence: nil)}
+    today_presences = PresenceService.list_by_date(socket.assigns.today)
+    already_present_ids = Enum.map(today_presences, & &1.participation_id)
+
+    {:noreply, assign(socket, show_manual_modal: true, edit_presence: nil, manual_error: nil, already_present_ids: already_present_ids)}
   end
 
   @impl true
   def handle_event("close_manual_modal", _, socket) do
-    {:noreply, assign(socket, :show_manual_modal, false)}
+    {:noreply, assign(socket, show_manual_modal: false, manual_error: nil)}
   end
 
   @impl true
@@ -58,9 +65,25 @@ defmodule UpaTikPortalWeb.Mentor.PresensiLive.Index do
   end
 
   @impl true
+  def handle_event("filter_presences", %{"search" => search, "opening" => opening}, socket) do
+    presences = 
+      PresenceService.list_by_date(socket.assigns.today, search: search, opening: opening)
+      |> Enum.filter(&(&1.participation_id in socket.assigns.bimbingan_ids))
+
+    {:noreply,
+     socket
+     |> assign(:search, search)
+     |> assign(:opening, opening)
+     |> stream(:presences, presences, reset: true)}
+  end
+
+  @impl true
   def handle_event("edit_presence", %{"id" => id}, socket) do
     presence = PresenceService.get_presence!(id)
-    {:noreply, assign(socket, show_manual_modal: true, edit_presence: presence)}
+    today_presences = PresenceService.list_by_date(socket.assigns.today)
+    already_present_ids = Enum.map(today_presences, & &1.participation_id)
+
+    {:noreply, assign(socket, show_manual_modal: true, edit_presence: presence, manual_error: nil, already_present_ids: already_present_ids)}
   end
 
   @impl true
@@ -85,17 +108,27 @@ defmodule UpaTikPortalWeb.Mentor.PresensiLive.Index do
     check_in = params["check_in"]
     check_out = params["check_out"]
 
-    case PresenceService.set_manual_presence(p_id, socket.assigns.today, status, notes, check_in, check_out) do
-      {:ok, presence} ->
-        presence = PresenceService.get_presence!(presence.id) |> UpaTikPortal.Repo.preload(participation: [:user])
-        # Gunakan stream_insert untuk update list
-        {:noreply,
-         socket
-         |> put_flash(:info, "Presensi manual berhasil disimpan.")
-         |> assign(:show_manual_modal, false)
-         |> stream_insert(:presences, presence, at: 0)}
-      {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Gagal menyimpan presensi manual.")}
+    already_present? = is_nil(socket.assigns.edit_presence) and PresenceService.get_today(p_id) != nil
+    
+    if already_present? do
+      {:noreply, assign(socket, :manual_error, "Gagal: Peserta ini sudah melakukan presensi hari ini.")}
+    else
+      if check_out != "" and (is_nil(check_in) or check_in == "") do
+        {:noreply, assign(socket, :manual_error, "Gagal: Harus mengisi jam Check-In terlebih dahulu jika ingin mengisi Check-Out.")}
+      else
+        case PresenceService.set_manual_presence(p_id, socket.assigns.today, status, notes, check_in, check_out) do
+          {:ok, presence} ->
+            presence = PresenceService.get_presence!(presence.id) |> UpaTikPortal.Repo.preload(participation: [:user])
+            # Gunakan stream_insert untuk update list
+            {:noreply,
+             socket
+             |> put_flash(:info, "Presensi manual berhasil disimpan.")
+             |> assign(show_manual_modal: false, manual_error: nil)
+             |> stream_insert(:presences, presence, at: 0)}
+          {:error, _changeset} ->
+            {:noreply, assign(socket, :manual_error, "Gagal menyimpan presensi manual. Pastikan data valid.")}
+        end
+      end
     end
   end
 
