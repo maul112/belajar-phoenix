@@ -16,15 +16,26 @@ defmodule UpaTikPortal.Mailer do
 
     # Load dan Decode sertifikat Laragon secara manual
     # Ini memastikan data sertifikat benar-benar ada di memori
+    paths = [
+      "/etc/ssl/certs/ca-certificates.crt",
+      "C:/laragon/etc/ssl/cacert.pem"
+    ]
+
+    cert_binary = Enum.find_value(paths, fn path ->
+      case File.read(path) do
+        {:ok, binary} -> binary
+        _ -> nil
+      end
+    end)
+
     certs =
-      case File.read("C:/laragon/etc/ssl/cacert.pem") do
-        {:ok, binary} ->
-          :public_key.pem_decode(binary)
-          |> Enum.filter(fn {type, _, _} -> type == :Certificate end)
-          |> Enum.map(fn {_, der, _} -> der end)
-        _ ->
-          IO.puts(">>> [Mailer] WARNING: Gagal membaca file sertifikat Laragon!")
-          []
+      if cert_binary do
+        :public_key.pem_decode(cert_binary)
+        |> Enum.filter(fn {type, _, _} -> type == :Certificate end)
+        |> Enum.map(fn {_, der, _} -> der end)
+      else
+        IO.puts(">>> [Mailer] WARNING: Gagal membaca file sertifikat!")
+        []
       end
 
     IO.puts(">>> [Mailer] Berhasil me-load #{length(certs)} sertifikat ke memori.")

@@ -95,59 +95,78 @@ defmodule UpaTikPortalWeb.Home.Lowongan.Ajukan do
       |> Map.put(:action, :insert) # Memaksa error langsung muncul di UI form
 
     if changeset.valid? do
-      # --- JIKA FORM VALID: PROSES UPLOAD NYATA DIMULAI ---
-      
-      with {:ok, cv_url} <- consume_file(socket, :cv),
-           {:ok, surat_url} <- consume_file(socket, :surat_pengantar),
-           {:ok, nilai_} <- consume_file(socket, :transkrip),
-           {:ok, portfolio_url} <- (if portfolio_mode == "file", do: consume_file(socket, :portfolio_file), else: {:ok, Map.get(final_params, "portfolio_url")}) do
-
-        # Gabungkan URL hasil upload ke parameter untuk disimpan ke database
-        completed_params =
-          final_params
-          |> Map.put("cv_url", cv_url)
-          |> Map.put("surat_pengantar_url", surat_url)
-          |> Map.put("transkrip_nilai_url", nilai_)
-          |> Map.put("portfolio_url", portfolio_url)
-
-        # Kirim parameter yang sudah lengkap ke Service untuk disimpan
-        case InternshipParticipationService.create_internship_participation(completed_params) do
-          {:ok, _participation} ->
-            {:noreply,
-            socket
-            |> put_flash(:info, "Lamaran berhasil dikirim!")
-            |> push_navigate(to: ~p"/portal/lowongan")}
-
-          {:error, :quota_full} ->
-            {:noreply,
-            socket
-            |> put_flash(:error, "Maaf, kuota untuk lowongan ini sudah penuh!")
-            |> push_navigate(to: ~p"/portal/lowongan")}
-
-          {:error, :already_applied} ->
-            {:noreply,
-            socket
-            |> put_flash(:error, "Kamu sudah melamar di lowongan ini sebelumnya.")
-            |> push_navigate(to: ~p"/portal/lowongan")}
-
-          {:error, :overlap_active_internship} ->
-            {:noreply,
-            socket
-            |> put_flash(:error, "Maaf, tanggal magang ini bentrok dengan magang kamu yang sedang aktif.")
-            |> push_navigate(to: ~p"/portal/lowongan")}
-
-          {:error, %Ecto.Changeset{} = db_changeset} ->
-            {:noreply, assign(socket, :form, to_form(%{db_changeset | action: :insert}))}
-        end
-      else
+      # --- PRE-FLIGHT CHECK MINIO ---
+      # Memastikan server MinIO hidup sebelum memproses/mengonsumsi file,
+      # sehingga jika MinIO mati, antrean file di UI tidak hilang (tidak di-consume).
+      bucket = Application.get_env(:waffle, :bucket)
+      case ExAws.S3.head_bucket(bucket) |> ExAws.request() do
         {:error, _reason} ->
-          # Terjadi error saat upload ke MinIO
           {:noreply,
            socket
-           |> put_flash(:error, "Gagal mengunggah file. Layanan penyimpanan sedang mengalami gangguan. Silakan coba beberapa saat lagi.")
+           |> put_flash(:error, "Gagal terhubung ke layanan penyimpanan file (Server MinIO mati). File Anda masih tersimpan di form, silakan coba lagi nanti.")
            |> assign(:form, to_form(changeset))}
-      end
 
+        {:ok, _} ->
+          # --- JIKA FORM VALID & MINIO HIDUP: PROSES UPLOAD NYATA DIMULAI ---
+          with {:ok, cv_url} <- consume_file(socket, :cv),
+               {:ok, surat_url} <- consume_file(socket, :surat_pengantar),
+               {:ok, nilai_} <- consume_file(socket, :transkrip),
+               {:ok, portfolio_url} <- (if portfolio_mode == "file", do: consume_file(socket, :portfolio_file), else: {:ok, Map.get(final_params, "portfolio_url")}) do
+
+            # Gabungkan URL hasil upload ke parameter untuk disimpan ke database
+            completed_params =
+              final_params
+              |> Map.put("cv_url", cv_url)
+              |> Map.put("surat_pengantar_url", surat_url)
+              |> Map.put("transkrip_nilai_url", nilai_)
+              |> Map.put("portfolio_url", portfolio_url)
+
+            # Kirim parameter yang sudah lengkap ke Service untuk disimpan
+            case InternshipParticipationService.create_internship_participation(completed_params) do
+              {:ok, participation} ->
+                # Ambil data lengkap participation beserta assoc (user, internship_opening)
+                participation = InternshipParticipationService.get_internship_participation!(participation.id)
+
+                Task.start(fn ->
+                  email = UpaTikPortal.Emails.internship_status_email(participation)
+                  deliver_now(email)
+                end)
+
+                {:noreply,
+                socket
+                |> put_flash(:info, "Lamaran berhasil dikirim! Silakan periksa email Anda.")
+                |> push_navigate(to: ~p"/portal/lowongan")}
+
+              {:error, :quota_full} ->
+                {:noreply,
+                socket
+                |> put_flash(:error, "Maaf, kuota untuk lowongan ini sudah penuh!")
+                |> push_navigate(to: ~p"/portal/lowongan")}
+
+              {:error, :already_applied} ->
+                {:noreply,
+                socket
+                |> put_flash(:error, "Kamu sudah melamar di lowongan ini sebelumnya.")
+                |> push_navigate(to: ~p"/portal/lowongan")}
+
+              {:error, :overlap_active_internship} ->
+                {:noreply,
+                socket
+                |> put_flash(:error, "Maaf, tanggal magang ini bentrok dengan magang kamu yang sedang aktif.")
+                |> push_navigate(to: ~p"/portal/lowongan")}
+
+              {:error, %Ecto.Changeset{} = db_changeset} ->
+                {:noreply, assign(socket, :form, to_form(%{db_changeset | action: :insert}))}
+            end
+          else
+            {:error, _reason} ->
+              # Jika terjadi error tidak terduga saat proses put_object
+              {:noreply,
+               socket
+               |> put_flash(:error, "Gagal mengunggah file karena gangguan koneksi. Silakan ulangi.")
+               |> assign(:form, to_form(changeset))}
+          end
+      end
     else
       # --- JIKA FORM TIDAK VALID: JANGAN UPLOAD APAPUN ---
       # File CV/Surat tidak hilang dari browser, error muncul instan murni tanpa delay
@@ -211,5 +230,26 @@ defmodule UpaTikPortalWeb.Home.Lowongan.Ajukan do
         result -> result # akan bernilai {:ok, url} atau {:error, reason}
       end
     end
+  end
+
+  defp deliver_now(email) do
+    user = System.get_env("SMTP_USER")
+    pass = System.get_env("SMTP_PASSWORD")
+
+    config = [
+      relay: "smtp.gmail.com",
+      username: user,
+      password: pass,
+      port: 587,
+      ssl: false,
+      tls: :always,
+      auth: :always,
+      retries: 1,
+      tls_options: [verify: :verify_none],
+      ssl_options: [verify: :verify_none]
+    ]
+
+    IO.puts(">>> [INTERNAL] Mengirim via Port 587 (STARTTLS)...")
+    Swoosh.Adapters.SMTP.deliver(email, config)
   end
 end

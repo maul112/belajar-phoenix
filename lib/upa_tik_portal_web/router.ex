@@ -37,7 +37,7 @@ defmodule UpaTikPortalWeb.Router do
   scope "/", UpaTikPortalWeb do
     pipe_through :browser
 
-    live "/", LoginLive, :index
+    live "/", Auth.LoginLive, :index
     get "/logout", AuthController, :redirect_to_logout
   end
 
@@ -55,9 +55,9 @@ defmodule UpaTikPortalWeb.Router do
     pipe_through [:browser, :require_auth, :require_mahasiswa_access]
 
     live "/", Home.Index, :index
-    live "/ajukan", RequestLive, :index
-    live "/status", RequestStatusLive, :index
-    live "/keluhan", KeluhanLive, :index
+    live "/ajukan", Home.Ajukan.Index, :index
+    live "/status", Home.Status.Index, :index
+    live "/keluhan", Home.Keluhan.Index, :index
     
     live "/lowongan", Home.Lowongan.Index, :index
     live "/lowongan/:id", Home.Lowongan.Detail, :show
@@ -79,10 +79,10 @@ defmodule UpaTikPortalWeb.Router do
     pipe_through [:browser, :require_auth, :require_admin_access]
 
     live "/", DashboardLive, :index
-    live "/pengajuan", RequestListLive, :index
-    live "/pengajuan/:id", RequestDetailLive, :show
-    live "/keluhan", KeluhanListLive, :index
-    live "/users", UserListLive, :index
+    live "/pengajuan", PengajuanLive.Index, :index
+    live "/pengajuan/:id", PengajuanLive.Show, :show
+    live "/keluhan", KeluhanLive.Index, :index
+    live "/users", UserLive.Index, :index
 
     live "/lowongan", LowonganLive.Index, :index
     live "/lowongan/new", LowonganLive.New, :new

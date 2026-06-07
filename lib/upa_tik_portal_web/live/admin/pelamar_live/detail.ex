@@ -30,10 +30,16 @@ defmodule UpaTikPortalWeb.Admin.PelamarLive.Detail do
       {:ok, updated} ->
         updated = InternshipParticipationService.get_internship_participation!(updated.id)
 
+        # Send email notification asynchronously
+        Task.start(fn ->
+          email = UpaTikPortal.Emails.internship_status_email(updated)
+          deliver_now(email)
+        end)
+
         {:noreply,
          socket
          |> assign(:participation, updated)
-         |> put_flash(:info, "Status lamaran diperbarui menjadi \"#{status_label(status)}\".")}
+         |> put_flash(:info, "Status lamaran diperbarui menjadi \"#{status_label(status)}\". Email notifikasi telah dikirim.")}
 
       {:error, reason} when is_binary(reason) ->
         {:noreply, put_flash(socket, :error, reason)}
@@ -77,4 +83,25 @@ defmodule UpaTikPortalWeb.Admin.PelamarLive.Detail do
   defp status_color("accepted"), do: "bg-green-100 text-green-700"
   defp status_color("rejected"), do: "bg-red-100 text-red-700"
   defp status_color(_), do: "bg-gray-100 text-gray-600"
+
+  defp deliver_now(email) do
+    user = System.get_env("SMTP_USER")
+    pass = System.get_env("SMTP_PASSWORD")
+
+    config = [
+      relay: "smtp.gmail.com",
+      username: user,
+      password: pass,
+      port: 587,
+      ssl: false,
+      tls: :always,
+      auth: :always,
+      retries: 1,
+      tls_options: [verify: :verify_none],
+      ssl_options: [verify: :verify_none]
+    ]
+
+    IO.puts(">>> [INTERNAL] Mengirim via Port 587 (STARTTLS)...")
+    Swoosh.Adapters.SMTP.deliver(email, config)
+  end
 end
