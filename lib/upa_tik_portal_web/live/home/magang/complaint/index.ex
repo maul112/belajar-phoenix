@@ -10,21 +10,24 @@ defmodule UpaTikPortalWeb.Home.Magang.Complaint.Index do
   @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
-    participation = InternshipParticipationService.get_active_participation_by_user(user.id)
+    participation = InternshipParticipationService.get_latest_accepted_participation(user.id)
 
     if is_nil(participation) do
       {:ok,
        socket
-       |> put_flash(:error, "Kamu tidak memiliki magang aktif.")
+       |> put_flash(:error, "Kamu tidak memiliki magang aktif atau riwayat magang.")
        |> push_navigate(to: ~p"/portal/magang")}
     else
+      is_completed = participation.internship_opening.end_date && Date.compare(UpaTikPortalWeb.Helpers.TimeHelper.today_wib(), participation.internship_opening.end_date) == :gt
       complaints = InternComplaintService.list_by_participation(participation.id)
+
       form = InternComplaintService.change_complaint() |> to_form()
 
       {:ok,
        socket
        |> assign(:page_title, "Keluhan Magang")
        |> assign(:participation, participation)
+       |> assign(:is_completed, is_completed)
        |> assign(:form, form)
        |> assign(:show_form, false)
        |> stream(:complaints, complaints)}

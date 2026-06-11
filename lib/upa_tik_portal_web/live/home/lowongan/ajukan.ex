@@ -194,7 +194,9 @@ defmodule UpaTikPortalWeb.Home.Lowongan.Ajukan do
   defp validate_portfolio_presence(changeset, "file", entries) do
     validate_file_presence(changeset, :portfolio_url, entries)
   end
-  defp validate_portfolio_presence(changeset, _mode, _entries), do: changeset
+  defp validate_portfolio_presence(changeset, "link", _entries) do
+    Ecto.Changeset.validate_required(changeset, [:portfolio_url], message: "can't be blank")
+  end
 
   defp consume_file(socket, upload_key) do
     if Enum.empty?(socket.assigns.uploads[upload_key].entries) do

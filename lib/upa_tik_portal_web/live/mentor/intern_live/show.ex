@@ -6,6 +6,7 @@ defmodule UpaTikPortalWeb.Mentor.InternLive.Show do
   alias UpaTikPortal.Recruitment.InternshipParticipationService
   alias UpaTikPortal.Recruitment.WeeklyLogService
   alias UpaTikPortal.Recruitment.PresenceService
+  alias UpaTikPortal.Recruitment.InternComplaintService
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -21,6 +22,7 @@ defmodule UpaTikPortalWeb.Mentor.InternLive.Show do
     else
       logs = WeeklyLogService.list_by_participation(id)
       presences = PresenceService.list_by_participation(id)
+      complaints = InternComplaintService.list_by_participation(id)
       presence_stats = PresenceService.stats(id)
 
       {:ok,
@@ -30,10 +32,18 @@ defmodule UpaTikPortalWeb.Mentor.InternLive.Show do
        |> assign(:presence_stats, presence_stats)
        |> assign(:editing_log_id, nil)
        |> assign(:feedback_text, "")
+       |> assign(:active_tab, :logbook)
        |> stream(:logs, logs)
-       |> stream(:presences, presences)}
+       |> stream(:presences, presences)
+       |> stream(:complaints, complaints)}
     end
   end
+
+  @impl true
+  def handle_event("switch_tab", %{"tab" => "logbook"}, socket), do: {:noreply, assign(socket, :active_tab, :logbook)}
+  def handle_event("switch_tab", %{"tab" => "presensi"}, socket), do: {:noreply, assign(socket, :active_tab, :presensi)}
+  def handle_event("switch_tab", %{"tab" => "complaints"}, socket), do: {:noreply, assign(socket, :active_tab, :complaints)}
+  def handle_event("switch_tab", _, socket), do: {:noreply, socket}
 
   @impl true
   def handle_event("edit_feedback", %{"log_id" => log_id}, socket) do
@@ -73,6 +83,22 @@ defmodule UpaTikPortalWeb.Mentor.InternLive.Show do
     end
   end
 
+  @impl true
+  def handle_event("resolve_complaint", %{"id" => id}, socket) do
+    complaint = InternComplaintService.get_complaint!(id)
+
+    case InternComplaintService.resolve_complaint(complaint, !complaint.is_resolved) do
+      {:ok, updated} ->
+        {:noreply,
+         socket
+         |> stream_insert(:complaints, updated)
+         |> put_flash(:info, "Status keluhan diperbarui.")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Gagal mengubah status.")}
+    end
+  end
+
   defp presence_status_color("present"), do: "bg-green-100 text-green-700"
   defp presence_status_color("sick"), do: "bg-blue-100 text-blue-700"
   defp presence_status_color("permit"), do: "bg-yellow-100 text-yellow-700"
@@ -84,4 +110,9 @@ defmodule UpaTikPortalWeb.Mentor.InternLive.Show do
   defp presence_status_label("permit"), do: "Izin"
   defp presence_status_label("absent"), do: "Alpha"
   defp presence_status_label(_), do: "-"
+
+  defp category_color("Fasilitas"), do: "bg-purple-100 text-purple-700"
+  defp category_color("Teknis"), do: "bg-blue-100 text-blue-700"
+  defp category_color("Lingkungan"), do: "bg-green-100 text-green-700"
+  defp category_color(_), do: "bg-slate-100 text-slate-700"
 end

@@ -15,11 +15,55 @@ defmodule UpaTikPortal.Recruitment.InternComplaintService do
   end
 
   @doc "Daftar semua keluhan intern (untuk admin), terbaru dulu"
-  def list_all do
-    InternComplaint
-    |> order_by([c], desc: c.inserted_at)
-    |> preload(participation: [:user])
-    |> Repo.all()
+  def list_all(opts \\ []) do
+    query =
+      InternComplaint
+      |> filter_category(opts[:category])
+      |> order_by([c], desc: c.inserted_at)
+      |> preload(participation: [:user])
+
+    paginate_query(query, opts)
+  end
+
+  @doc "Daftar keluhan intern yang dibimbing mentor tertentu"
+  def list_by_mentor(mentor_id, opts \\ []) do
+    query =
+      InternComplaint
+      |> join(:inner, [c], p in assoc(c, :participation))
+      |> where([c, p], p.mentor_id == ^mentor_id)
+      |> filter_category(opts[:category])
+      |> order_by([c, p], desc: c.inserted_at)
+      |> preload([c, p], participation: [:user])
+
+    paginate_query(query, opts)
+  end
+
+  defp filter_category(query, nil), do: query
+  defp filter_category(query, ""), do: query
+  defp filter_category(query, category), do: where(query, [c], c.category == ^category)
+
+  defp paginate_query(query, opts) do
+    page = Keyword.get(opts, :page)
+    per_page = Keyword.get(opts, :per_page, 10)
+
+    if page do
+      page = max(1, if(is_binary(page), do: String.to_integer(page), else: page))
+      offset = (page - 1) * per_page
+      
+      count_query = query |> exclude(:order_by) |> exclude(:preload) |> exclude(:select) |> select([c], count(c.id))
+      total_entries = Repo.one(count_query) || 0
+      total_pages = max(1, ceil(total_entries / per_page))
+
+      entries =
+        query
+        |> limit(^per_page)
+        |> offset(^offset)
+        |> Repo.all()
+
+      %{entries: entries, total_pages: total_pages, current_page: page}
+    else
+      Repo.all(query)
+    end
   end
 
   @doc "Ambil satu complaint by id"
@@ -45,9 +89,15 @@ defmodule UpaTikPortal.Recruitment.InternComplaintService do
 
   @doc "Admin menandai keluhan sebagai resolved/unresolved"
   def resolve_complaint(%InternComplaint{} = complaint, is_resolved) do
-    complaint
-    |> InternComplaint.resolve_changeset(%{is_resolved: is_resolved})
-    |> Repo.update()
+    result =
+      complaint
+      |> InternComplaint.resolve_changeset(%{is_resolved: is_resolved})
+      |> Repo.update()
+
+    require Logger
+    Logger.error("RESOLVE COMPLAINT RESULT: #{inspect(result)}")
+
+    result
   end
 
   @doc "Changeset kosong untuk form"

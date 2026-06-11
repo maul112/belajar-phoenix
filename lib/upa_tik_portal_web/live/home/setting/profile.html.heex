@@ -1,13 +1,13 @@
-<.navbar active_tab={:profile} current_user={@user}>
-  <div class="max-w-7xl mx-auto px-4 py-10">
+<.navbarDynamic active_tab={:profile} current_user={@user}>
+  <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
     <!-- Profile Header Card -->
-    <div class="bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 rounded-3xl p-8 mb-8">
+    <div class="bg-white dark:bg-slate-900 dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 rounded-3xl p-8 mb-8">
       <div class="flex flex-col md:flex-row items-center gap-6">
         <div class="relative group">
           <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-blue-50 dark:ring-blue-900/30">
             <%= String.at(@user.name, 0) %>
           </div>
-          <button class="absolute bottom-0 right-0 p-2 bg-white dark:bg-slate-700 rounded-full shadow-md border border-slate-100 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:text-blue-600">
+          <button class="absolute bottom-0 right-0 p-2 bg-white dark:bg-slate-900 dark:bg-slate-700 rounded-full shadow-md border border-slate-100 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:text-blue-600">
             <.icon name="hero-camera" class="w-4 h-4" />
           </button>
         </div>
@@ -24,7 +24,7 @@
     </div>
 
     <!-- Form Edit Profil -->
-    <div class="bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 rounded-3xl overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 rounded-3xl overflow-hidden">
       <div class="p-8">
         <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Informasi Pribadi</h3>
         
@@ -41,7 +41,7 @@
                 <!-- Email (Read Only) -->
                 <div>
                     <label class="block text-sm font-semibold leading-6 text-zinc-800 dark:text-zinc-200">Email Kampus</label>
-                    <div class="mt-2 p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 cursor-not-allowed">
+                    <div class="mt-2 p-3 bg-slate-50 dark:bg-slate-800 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 cursor-not-allowed">
                         <%= @user.email %>
                     </div>
                 </div>
@@ -56,4 +56,4 @@
       </div>
     </div>
   </div>
-</.navbar>
+</.navbarDynamic>

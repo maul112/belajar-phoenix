@@ -8,24 +8,26 @@
     </.link>
 
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Riwayat Presensi</h1>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Riwayat Presensi</h1>
       <p class="text-slate-500 text-sm mt-1">Rekap kehadiran selama magang</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <%!-- Panel Kiri: QR Code --%>
-      <div class="lg:col-span-1 h-fit sticky top-6">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col items-center text-center">
-          <h3 class="font-bold text-slate-900 mb-2">QR Code Presensi</h3>
-          <p class="text-sm text-slate-500 mb-4">Tunjukkan QR Code ini ke mentor atau admin untuk check-in/out.</p>
-          <button phx-click={show_modal("qr-modal-presensi")} class="bg-white p-4 border-2 border-slate-100 rounded-xl max-w-[200px] w-full hover:border-blue-300 transition-colors cursor-zoom-in" title="Klik untuk memperbesar">
-            <%= raw(@qr_svg) %>
-          </button>
+      <%= if not @is_completed do %>
+        <%!-- Panel Kiri: QR Code --%>
+        <div class="lg:col-span-1 h-fit sticky top-6">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 flex flex-col items-center text-center">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-2">QR Code Presensi</h3>
+            <p class="text-sm text-slate-500 mb-4">Tunjukkan QR Code ini ke mentor atau admin untuk check-in/out.</p>
+            <button phx-click={show_modal("qr-modal-presensi")} class="bg-white dark:bg-slate-900 p-4 border-2 border-slate-100 rounded-xl max-w-[200px] w-full hover:border-blue-300 transition-colors cursor-zoom-in" title="Klik untuk memperbesar">
+              <%= raw(@qr_svg) %>
+            </button>
+          </div>
         </div>
-      </div>
+      <% end %>
 
       <%!-- Panel Kanan: Stats & History --%>
-      <div class="lg:col-span-2 space-y-6">
+      <div class={["space-y-6", if(@is_completed, do: "lg:col-span-3", else: "lg:col-span-2")]}>
         <%!-- Stats --%>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
@@ -47,9 +49,9 @@
         </div>
 
         <%!-- Table --%>
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-            <h3 class="font-bold text-slate-900 flex items-center gap-2">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
+            <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <.icon name="hero-clock" class="w-5 h-5 text-indigo-600" />
               Riwayat Presensi
             </h3>
@@ -59,14 +61,14 @@
               Belum ada data presensi tercatat.
             </div>
             <%= for {id, presence} <- @streams.presences do %>
-              <div id={id} class="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors">
+              <div id={id} class="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 dark:bg-slate-800 transition-colors">
                 <div class="flex items-center gap-4">
                   <div class="text-center w-12">
-                    <p class="text-lg font-bold text-slate-900">{Calendar.strftime(presence.date, "%d")}</p>
+                    <p class="text-lg font-bold text-slate-900 dark:text-white">{Calendar.strftime(presence.date, "%d")}</p>
                     <p class="text-xs text-slate-500">{Calendar.strftime(presence.date, "%b %Y")}</p>
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-900">{Calendar.strftime(presence.date, "%A")}</p>
+                    <p class="text-sm font-medium text-slate-900 dark:text-white">{Calendar.strftime(presence.date, "%A")}</p>
                     <%= if presence.notes do %>
                       <p class="text-xs text-slate-500">{presence.notes}</p>
                     <% end %>
@@ -76,7 +78,7 @@
                 <div class="flex items-center gap-4">
                   <div class="text-right">
                     <p class="text-xs text-slate-400">In / Out</p>
-                    <p class="text-sm font-medium text-slate-700">
+                    <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
                       <%= if presence.check_in do %>
                         {Calendar.strftime(presence.check_in, "%H:%M")}
                       <% else %>
@@ -101,14 +103,16 @@
       </div>
     </div>
 
-    <.modal id="qr-modal-presensi">
-      <div class="text-center p-2">
-        <h3 class="text-xl font-bold text-slate-900 mb-2">QR Code Presensi</h3>
-        <p class="text-sm text-slate-500 mb-6">Arahkan layar ini ke Scanner QR Mentor atau Admin untuk melakukan Check-in dan Check-out.</p>
-        <div class="bg-white p-6 border-2 border-slate-100 rounded-2xl max-w-[280px] w-full mx-auto shadow-sm">
-          <%= raw(@qr_svg) %>
+    <%= if not @is_completed do %>
+      <.modal id="qr-modal-presensi">
+        <div class="text-center p-2">
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">QR Code Presensi</h3>
+          <p class="text-sm text-slate-500 mb-6">Arahkan layar ini ke Scanner QR Mentor atau Admin untuk melakukan Check-in dan Check-out.</p>
+          <div class="bg-white dark:bg-slate-900 p-6 border-2 border-slate-100 rounded-2xl max-w-[280px] w-full mx-auto shadow-sm">
+            <%= raw(@qr_svg) %>
+          </div>
         </div>
-      </div>
-    </.modal>
+      </.modal>
+    <% end %>
   </div>
 </.navbar>

@@ -5,6 +5,8 @@ defmodule UpaTikPortalWeb.Mentor.DashboardLive do
 
   alias UpaTikPortal.Recruitment.InternshipParticipationService
   alias UpaTikPortal.Recruitment.PresenceService
+  alias UpaTikPortal.Recruitment.WeeklyLogService
+  alias UpaTikPortal.Recruitment.InternComplaintService
 
   @impl true
   def mount(_params, _session, socket) do
@@ -33,7 +35,13 @@ defmodule UpaTikPortalWeb.Mentor.DashboardLive do
     InternshipParticipationService.list_by_mentor(mentor_id, search: search)
     |> Enum.map(fn intern ->
       stats = PresenceService.stats(intern.id)
-      Map.put(intern, :presence_stats, stats)
+      log_stats = WeeklyLogService.stats(intern.id)
+      complaint_stats = InternComplaintService.stats(intern.id)
+      
+      intern
+      |> Map.put(:presence_stats, stats)
+      |> Map.put(:log_stats, log_stats)
+      |> Map.put(:complaint_stats, complaint_stats)
     end)
   end
 

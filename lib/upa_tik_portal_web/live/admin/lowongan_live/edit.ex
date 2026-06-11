@@ -1,17 +1,20 @@
 defmodule UpaTikPortalWeb.Admin.LowonganLive.Edit do
   use UpaTikPortalWeb, :live_view
   alias UpaTikPortal.Recruitment.InternshipOpeningService
-  # alias UpaTikPortal.Recruitment.InternshipOpening
+  alias UpaTikPortal.Recruitment.DivisionService
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
     opening = InternshipOpeningService.get_internship_opening!(id)
     changeset = InternshipOpeningService.change_internship_opening(opening)
 
+    divisions = DivisionService.list_divisions() |> Enum.map(&{&1.name, &1.id})
+
     {:ok,
      socket
      |> assign(:page_title, "Edit Lowongan")
      |> assign(:opening, opening)
+     |> assign(:divisions, divisions)
      |> assign_form(changeset)}
   end
 

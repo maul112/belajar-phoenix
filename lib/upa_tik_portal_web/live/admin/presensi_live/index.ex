@@ -21,13 +21,16 @@ defmodule UpaTikPortalWeb.Admin.PresensiLive.Index do
      |> assign(:page_title, "Monitor Presensi & Scanner")
      |> assign(:today, today)
      |> assign(:scan_result, nil)
+     |> assign(:scan_mode, "check_in")
+     |> assign(:grouped_interns, grouped_interns)
      |> assign(:selected_category, "Semua")
      |> assign(:show_manual_modal, false)
      |> assign(:manual_error, nil)
      |> assign(:search, "")
      |> assign(:opening, "")
      |> assign(:already_present_ids, [])
-     |> stream(:presences, presences)}
+     |> stream(:presences, presences)
+     |> load_stats()}
   end
 
   @impl true
@@ -61,7 +64,8 @@ defmodule UpaTikPortalWeb.Admin.PresensiLive.Index do
      socket
      |> assign(:search, search)
      |> assign(:opening, opening)
-     |> stream(:presences, presences, reset: true)}
+     |> stream(:presences, presences, reset: true)
+     |> load_stats()}
   end
 
   @impl true
@@ -81,7 +85,8 @@ defmodule UpaTikPortalWeb.Admin.PresensiLive.Index do
         {:noreply, 
          socket 
          |> put_flash(:info, "Presensi berhasil dihapus.")
-         |> stream_delete(:presences, presence)}
+         |> stream_delete(:presences, presence)
+         |> load_stats()}
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Gagal menghapus presensi.")}
     end
@@ -94,23 +99,32 @@ defmodule UpaTikPortalWeb.Admin.PresensiLive.Index do
     notes = params["notes"]
     check_in = params["check_in"]
     check_out = params["check_out"]
+    manual_date_str = params["manual_date"]
     
-    already_present? = is_nil(socket.assigns.edit_presence) and PresenceService.get_today(p_id) != nil
+    date_parsed = case Date.from_iso8601(manual_date_str) do
+      {:ok, date} -> date
+      _ -> socket.assigns.today
+    end
+    
+    # Periksa apakah sudah presensi di tanggal tersebut
+    presences = PresenceService.list_by_participation(p_id)
+    already_present? = is_nil(socket.assigns.edit_presence) and Enum.any?(presences, &(&1.date == date_parsed))
     
     if already_present? do
-      {:noreply, assign(socket, :manual_error, "Gagal: Peserta ini sudah melakukan presensi hari ini.")}
+      {:noreply, assign(socket, :manual_error, "Gagal: Peserta ini sudah melakukan presensi di tanggal tersebut.")}
     else
       if check_out != "" and (is_nil(check_in) or check_in == "") do
         {:noreply, assign(socket, :manual_error, "Gagal: Harus mengisi jam Check-In terlebih dahulu jika ingin mengisi Check-Out.")}
       else
-        case PresenceService.set_manual_presence(p_id, socket.assigns.today, status, notes, check_in, check_out) do
+        case PresenceService.set_manual_presence(p_id, date_parsed, status, notes, check_in, check_out) do
           {:ok, presence} ->
             presence = PresenceService.get_presence!(presence.id) |> UpaTikPortal.Repo.preload(participation: [:user])
             {:noreply,
              socket
              |> put_flash(:info, "Presensi manual berhasil disimpan.")
              |> assign(show_manual_modal: false, manual_error: nil)
-             |> stream_insert(:presences, presence, at: 0)}
+             |> stream_insert(:presences, presence, at: 0)
+             |> load_stats()}
           {:error, _changeset} ->
             {:noreply, assign(socket, :manual_error, "Gagal menyimpan presensi manual. Pastikan data valid.")}
         end
@@ -135,7 +149,8 @@ defmodule UpaTikPortalWeb.Admin.PresensiLive.Index do
                  socket
                  |> put_flash(:info, "Berhasil Check-in: #{presence.participation.user.name}")
                  |> assign(:scan_result, {:ok, "Check-in berhasil untuk #{presence.participation.user.name}"})
-                 |> stream_insert(:presences, presence, at: 0)}
+                 |> stream_insert(:presences, presence, at: 0)
+                 |> load_stats()}
 
               {:error, _} ->
                 {:reply, %{status: "error"},
@@ -166,7 +181,8 @@ defmodule UpaTikPortalWeb.Admin.PresensiLive.Index do
                    socket
                    |> put_flash(:info, "Berhasil Check-out: #{presence.participation.user.name}")
                    |> assign(:scan_result, {:ok, "Check-out berhasil untuk #{presence.participation.user.name}"})
-                   |> stream_insert(:presences, presence)}
+                   |> stream_insert(:presences, presence)
+                   |> load_stats()}
 
                 {:error, _} ->
                   {:reply, %{status: "error"},
@@ -195,4 +211,31 @@ defmodule UpaTikPortalWeb.Admin.PresensiLive.Index do
   defp status_color("permit"), do: "bg-yellow-100 text-yellow-700"
   defp status_color("absent"), do: "bg-red-100 text-red-700"
   defp status_color(_), do: "bg-gray-100 text-gray-600"
+
+  defp load_stats(socket) do
+    # Fetch presences specifically for the loaded date and filters if we want to reflect the current view
+    # But wait, usually summary is for "Today" or the filtered date.
+    # Let's just use the current loaded presences. We can't access streams easily, so we re-fetch based on active interns.
+    today_presences = PresenceService.list_by_date(socket.assigns.today)
+    active_interns = InternshipParticipationService.list_active_interns()
+    
+    total_active = length(active_interns)
+    hadir = Enum.count(today_presences, & &1.status == "present")
+    sakit = Enum.count(today_presences, & &1.status == "sick")
+    izin = Enum.count(today_presences, & &1.status == "permit")
+    
+    # Yang belum absen dianggap Alpha jika hari ini, tapi karena ini stat hari ini, 
+    # kita hitung sisanya sebagai Alpha atau Belum Absen.
+    alpha = Enum.count(today_presences, & &1.status == "absent")
+    belum_absen = max(0, total_active - (hadir + sakit + izin + alpha))
+
+    assign(socket,
+      stats_hadir: hadir,
+      stats_sakit: sakit,
+      stats_izin: izin,
+      stats_alpha: alpha,
+      stats_belum: belum_absen,
+      stats_total: total_active
+    )
+  end
 end

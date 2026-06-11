@@ -9,12 +9,12 @@ defmodule UpaTikPortalWeb.Home.Magang.Presensi.Index do
   @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
-    participation = InternshipParticipationService.get_active_participation_by_user(user.id)
+    participation = InternshipParticipationService.get_latest_accepted_participation(user.id)
 
     if is_nil(participation) do
       {:ok,
        socket
-       |> put_flash(:error, "Kamu tidak memiliki magang aktif.")
+       |> put_flash(:error, "Kamu tidak memiliki magang aktif atau riwayat magang.")
        |> push_navigate(to: ~p"/portal/magang")}
     else
       presences = PresenceService.list_by_participation(participation.id)
@@ -23,10 +23,13 @@ defmodule UpaTikPortalWeb.Home.Magang.Presensi.Index do
       token = UpaTikPortal.Recruitment.QrCodeService.generate_token(participation.id)
       qr_svg = UpaTikPortal.Recruitment.QrCodeService.generate_svg(token)
 
+      is_completed = participation.internship_opening.end_date && Date.compare(UpaTikPortalWeb.Helpers.TimeHelper.today_wib(), participation.internship_opening.end_date) == :gt
+
       {:ok,
        socket
        |> assign(:page_title, "Presensi Saya")
        |> assign(:participation, participation)
+       |> assign(:is_completed, is_completed)
        |> assign(:stats, stats)
        |> assign(:qr_svg, qr_svg)
        |> stream(:presences, presences)}

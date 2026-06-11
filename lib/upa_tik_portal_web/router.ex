@@ -63,37 +63,51 @@ defmodule UpaTikPortalWeb.Router do
     live "/lowongan/:id", Home.Lowongan.Detail, :show
     live "/lowongan/:id/ajukan", Home.Lowongan.Ajukan, :index
 
-    live "/profile", Home.Setting.Profile, :index
-    live "/setting", Home.Setting.Index, :index
 
     # ─── Magang routes ────────────────────────────────────────────
     live "/magang", Home.Magang.Index, :index
     live "/magang/logbook", Home.Magang.Logbook.Index, :index
     live "/magang/logbook/new", Home.Magang.Logbook.New, :new
+    live "/magang/logbook/:id/edit", Home.Magang.Logbook.Edit, :edit
     live "/magang/presensi", Home.Magang.Presensi.Index, :index
     live "/magang/complaint", Home.Magang.Complaint.Index, :index
+    live "/magang/:id", Home.Magang.Show, :show
+  end
+
+  # ─── Authenticated generic routes (Profile & Settings) ──────────────────
+  scope "/portal", UpaTikPortalWeb do
+    pipe_through [:browser, :require_auth]
+
+    live_session :account, on_mount: [{UpaTikPortalWeb.UserAuth, :mount_current_user}] do
+      live "/profile", Home.Setting.Profile, :index
+      live "/setting", Home.Setting.Index, :index
+    end
   end
 
   # ─── Admin-only routes ────────────────────────────────────────────────────
   scope "/admin", UpaTikPortalWeb.Admin do
     pipe_through [:browser, :require_auth, :require_admin_access]
 
-    live "/", DashboardLive, :index
-    live "/pengajuan", PengajuanLive.Index, :index
-    live "/pengajuan/:id", PengajuanLive.Show, :show
-    live "/keluhan", KeluhanLive.Index, :index
-    live "/users", UserLive.Index, :index
+    live_session :admin, on_mount: [{UpaTikPortalWeb.UserAuth, :mount_current_user}] do
+      live "/", DashboardLive, :index
+      live "/pengajuan", PengajuanLive.Index, :index
+      live "/pengajuan/:id", PengajuanLive.Show, :show
+      live "/keluhan", KeluhanLive.Index, :index
+      live "/users", UserLive.Index, :index
+      live "/divisi", DivisionLive.Index, :index
 
-    live "/lowongan", LowonganLive.Index, :index
-    live "/lowongan/new", LowonganLive.New, :new
-    live "/lowongan/:id/edit", LowonganLive.Edit, :edit
+      live "/lowongan", LowonganLive.Index, :index
+      live "/lowongan/new", LowonganLive.New, :new
+      live "/lowongan/:id/edit", LowonganLive.Edit, :edit
 
-    live "/pelamar", PelamarLive.Index, :index
-    live "/pelamar/:id", PelamarLive.Detail, :show
+      live "/pelamar", PelamarLive.Index, :index
+      live "/pelamar/:id", PelamarLive.Detail, :show
 
-    live "/intern", InternLive.Index, :index
-    live "/intern/:id", InternLive.Show, :show
-    live "/presensi", PresensiLive.Index, :index
+      live "/intern", InternLive.Index, :index
+      live "/intern/:id", InternLive.Show, :show
+      live "/presensi", PresensiLive.Index, :index
+      live "/keluhan-magang", ComplaintLive.Index, :index
+    end
   end
   
   scope "/admin", UpaTikPortalWeb do
@@ -105,9 +119,12 @@ defmodule UpaTikPortalWeb.Router do
   scope "/mentor", UpaTikPortalWeb.Mentor do
     pipe_through [:browser, :require_auth, :require_mentor_access]
 
-    live "/", DashboardLive, :index
-    live "/intern/:id", InternLive.Show, :show
-    live "/presensi", PresensiLive.Index, :index
+    live_session :mentor, on_mount: [{UpaTikPortalWeb.UserAuth, :mount_current_user}] do
+      live "/", DashboardLive, :index
+      live "/intern/:id", InternLive.Show, :show
+      live "/presensi", PresensiLive.Index, :index
+      live "/keluhan-magang", ComplaintLive.Index, :index
+    end
   end
 
   scope "/storage", UpaTikPortalWeb do

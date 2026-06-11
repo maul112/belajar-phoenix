@@ -9,20 +9,22 @@ defmodule UpaTikPortalWeb.Home.Magang.Logbook.Index do
   @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
-    participation = InternshipParticipationService.get_active_participation_by_user(user.id)
+    participation = InternshipParticipationService.get_latest_accepted_participation(user.id)
 
     if is_nil(participation) do
       {:ok,
        socket
-       |> put_flash(:error, "Kamu tidak memiliki magang aktif.")
+       |> put_flash(:error, "Kamu tidak memiliki magang aktif atau riwayat magang.")
        |> push_navigate(to: ~p"/portal/magang")}
     else
+      is_completed = participation.internship_opening.end_date && Date.compare(UpaTikPortalWeb.Helpers.TimeHelper.today_wib(), participation.internship_opening.end_date) == :gt
       logs = WeeklyLogService.list_by_participation(participation.id)
 
       {:ok,
        socket
        |> assign(:page_title, "Logbook Mingguan")
        |> assign(:participation, participation)
+       |> assign(:is_completed, is_completed)
        |> stream(:logs, logs)}
     end
   end

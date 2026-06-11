@@ -1,4 +1,4 @@
-<.navbar active_tab={:setting}>
+<.navbarDynamic active_tab={:setting} current_user={@user}>
   <div class="max-w-7xl mx-auto px-4 py-10">
     <header class="mb-10">
       <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Pengaturan</h2>
@@ -7,7 +7,7 @@
 
     <div class="space-y-6">
       <!-- Section: Tampilan -->
-      <section class="bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 rounded-2xl overflow-hidden">
+      <section class="bg-white dark:bg-slate-900 dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 rounded-2xl overflow-hidden">
         <div class="p-6">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
@@ -32,10 +32,10 @@
       </section>
 
       <!-- Section: Profil (Opsional) -->
-      <section class="bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 rounded-2xl p-6">
+      <section class="bg-white dark:bg-slate-900 dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 rounded-2xl p-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300">
+            <div class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300">
               <.icon name="hero-user" class="w-6 h-6" />
             </div>
             <div>
@@ -43,11 +43,11 @@
               <p class="text-sm text-slate-500 dark:text-slate-400">Data mahasiswa dan instansi Anda.</p>
             </div>
           </div>
-          <.link navigate={~p"/portal/profile"} class="bg-slate-100 px-4 py-2 cursor-pointer rounded-md dark:bg-slate-700 text-slate-900! dark:text-white! hover:bg-slate-200">
+          <.link navigate={~p"/portal/profile"} class="bg-slate-100 px-4 py-2 cursor-pointer rounded-md dark:bg-slate-700 text-slate-900 dark:text-white! dark:text-white! hover:bg-slate-200">
             Edit Profil
           </.link>
         </div>
       </section>
     </div>
   </div>
-</.navbar>
+</.navbarDynamic>

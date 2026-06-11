@@ -4,7 +4,16 @@ let activeScanner = null;
 
 // Bersihkan scanner sebelum navigasi halaman
 window.addEventListener("phx:page-loading-start", () => {
+  // Matikan paksa semua track video untuk mencegah kamera tetap menyala
+  document.querySelectorAll('video').forEach(video => {
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+    }
+  });
+
   if (activeScanner) {
+    try { activeScanner.pause(); } catch(e) {}
     activeScanner.clear().catch(() => {});
     activeScanner = null;
   }
@@ -64,6 +73,15 @@ export const QrScanner = {
 
   destroyed() {
     if (this.observer) this.observer.disconnect();
+    
+    // Matikan paksa semua track video yang ada di dalam elemen ini
+    this.el.querySelectorAll('video').forEach(video => {
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+      }
+    });
+
     if (this.scanner) {
       this.scanner.clear().catch(error => {})
       if (activeScanner === this.scanner) activeScanner = null;
@@ -71,6 +89,28 @@ export const QrScanner = {
   }
 }
 
+export const Flash = {
+  mounted() {
+    const hide = () => {
+      const btn = this.el.querySelector("button");
+      if (btn) btn.click();
+    };
+    
+    // Auto-hide after 5 seconds (5000ms)
+    this.timer = setTimeout(hide, 5000);
+    
+    // Pause timer on hover
+    this.el.addEventListener("mouseenter", () => clearTimeout(this.timer));
+    this.el.addEventListener("mouseleave", () => {
+      this.timer = setTimeout(hide, 5000);
+    });
+  },
+  destroyed() {
+    clearTimeout(this.timer);
+  }
+}
+
 export default {
-    QrScanner
+    QrScanner,
+    Flash
 }

@@ -1,67 +1,65 @@
-<.navbarAdmin active_tab={:intern}>
+<.navbarAdmin current_user={@current_user} active_tab={:intern}>
   <Layouts.flash_group flash={@flash} />
 
-  <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900">Intern Aktif</h1>
+  <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
+      <div class="text-center md:text-left mb-4 md:mb-0">
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Intern Aktif</h1>
         <p class="text-slate-500 text-sm mt-1">Daftar peserta magang yang sedang berjalan</p>
       </div>
-    </div>
 
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-      <form phx-change="filter" class="w-full flex items-center">
-        <div class="relative w-full sm:w-1/2 md:w-1/3">
+      <div class="w-full md:w-auto">
+        <form phx-change="filter" class="relative w-full sm:w-64">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <.icon name="hero-magnifying-glass" class="h-5 w-5 text-slate-400" />
           </div>
-          <input type="text" name="search" value={@search} phx-debounce="300" placeholder="Cari nama intern..." class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" />
-        </div>
-      </form>
+          <input type="text" name="search" value={@search} phx-debounce="300" placeholder="Cari nama intern..." class="w-full pl-10 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" />
+        </form>
+      </div>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
       <table class="w-full text-sm">
-        <thead class="bg-slate-50 border-b border-slate-200">
+        <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <tr>
-            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Peserta</th>
-            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Posisi</th>
-            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Mentor</th>
-            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Periode</th>
-            <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Kehadiran</th>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600 dark:text-slate-400">Peserta</th>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600 dark:text-slate-400">Posisi</th>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600 dark:text-slate-400">Mentor</th>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600 dark:text-slate-400">Periode</th>
+            <th class="text-left px-5 py-3.5 font-semibold text-slate-600 dark:text-slate-400">Kehadiran</th>
             <th class="px-5 py-3.5"></th>
           </tr>
         </thead>
-        <tbody id="interns-table" phx-update="stream" class="divide-y divide-slate-100">
-          <tr class="hidden only:table-row">
+        <tbody id="interns-table" phx-update="stream" class="divide-y divide-slate-100 dark:divide-slate-800">
+          <tr id="empty-interns" class="hidden only:table-row">
             <td colspan="6" class="text-center text-slate-500 py-12">Belum ada intern aktif.</td>
           </tr>
           <%= for {id, intern} <- @streams.interns do %>
-            <tr id={id} class="hover:bg-slate-50 transition-colors">
+            <tr id={id} class="hover:bg-slate-50 dark:bg-slate-800 transition-colors">
               <td class="px-5 py-3.5">
-                <p class="font-medium text-slate-900">{intern.user.name}</p>
-                <p class="text-xs text-slate-500">{intern.university} · {intern.major}</p>
+                <p class="font-medium text-slate-900 dark:text-white">{intern.user.name}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Universitas Trunojoyo Madura · {intern.major}</p>
               </td>
               <td class="px-5 py-3.5">
-                <p class="text-slate-700">{intern.internship_opening.title}</p>
-                <p class="text-xs text-slate-400">{intern.internship_opening.department}</p>
+                <p class="text-slate-700 dark:text-slate-300">{intern.internship_opening.title}</p>
+                <p class="text-xs text-slate-400">{(if intern.internship_opening.division, do: intern.internship_opening.division.name, else: "-")}</p>
               </td>
-              <td class="px-5 py-3.5 text-slate-600">
+              <td class="px-5 py-3.5 text-slate-600 dark:text-slate-300">
                 <%= if intern.mentor do %>
                   {intern.mentor.name}
                 <% else %>
-                  <span class="text-slate-400 italic">Belum ditentukan</span>
+                  <span class="text-slate-400 dark:text-slate-500 italic">Belum ditentukan</span>
                 <% end %>
               </td>
-              <td class="px-5 py-3.5 text-slate-600 text-xs">
-                {Calendar.strftime(intern.start_date, "%d %b %Y")} –
-                {Calendar.strftime(intern.end_date, "%d %b %Y")}
+              <td class="px-5 py-3.5 text-slate-600 dark:text-slate-300 text-xs">
+                {Calendar.strftime(intern.internship_opening.start_date, "%d %b %Y")} –
+                {Calendar.strftime(intern.internship_opening.end_date, "%d %b %Y")}
               </td>
               <td class="px-5 py-3.5">
-                <span class="font-semibold text-slate-700">{attendance_rate(intern.id)}</span>
+                <span class="font-semibold text-slate-700 dark:text-slate-300">{attendance_rate(intern.id)}</span>
               </td>
               <td class="px-5 py-3.5 text-right">
-                <.link navigate={~p"/admin/intern/#{intern.id}"} class="text-blue-600 hover:text-blue-800 font-medium text-xs">
+                <.link navigate={~p"/admin/intern/#{intern.id}"} class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-xs">
                   Detail →
                 </.link>
               </td>
@@ -69,6 +67,23 @@
           <% end %>
         </tbody>
       </table>
+      <div class="p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800">
+        <p class="text-sm text-slate-500">
+          Halaman <%= @current_page %> dari <%= @total_pages %>
+        </p>
+        <div>
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <.link patch={~p"/admin/intern?search=#{@search}&page=#{max(1, @current_page - 1)}"} class={["relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium transition-colors", @current_page <= 1 && "opacity-50 pointer-events-none text-slate-400 dark:text-slate-500", @current_page > 1 && "text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"]}>
+              <span class="sr-only">Previous</span>
+              <.icon name="hero-chevron-left" class="h-5 w-5" />
+            </.link>
+            <.link patch={~p"/admin/intern?search=#{@search}&page=#{min(@total_pages, @current_page + 1)}"} class={["relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium transition-colors", @current_page >= @total_pages && "opacity-50 pointer-events-none text-slate-400 dark:text-slate-500", @current_page < @total_pages && "text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"]}>
+              <span class="sr-only">Next</span>
+              <.icon name="hero-chevron-right" class="h-5 w-5" />
+            </.link>
+          </nav>
+        </div>
+      </div>
     </div>
   </div>
 </.navbarAdmin>

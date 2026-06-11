@@ -9,11 +9,11 @@
     </.link>
 
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Tambah Weekly Log</h1>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Tambah Weekly Log</h1>
       <p class="text-slate-500 text-sm mt-1">Catat kegiatan yang kamu lakukan minggu ini</p>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
       <.form for={@form} id="weekly-log-form" phx-change="validate" phx-submit="save" class="space-y-5">
 
         <div class="grid grid-cols-3 gap-4">
@@ -30,7 +30,7 @@
         />
 
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
             Deskripsi Kegiatan
           </label>
           <textarea
@@ -38,18 +38,18 @@
             name={@form[:activity_description].name}
             rows="6"
             placeholder="Tuliskan detail kegiatan yang dilakukan selama seminggu ini..."
-            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           >{Phoenix.HTML.Form.normalize_value("textarea", @form[:activity_description].value)}</textarea>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
             File Laporan (Opsional, PDF)
           </label>
           <div class="mt-2 flex justify-center rounded-xl border border-dashed border-slate-300 px-6 py-6" phx-drop-target={@uploads.logbook_pdf.ref}>
             <div class="text-center">
               <.icon name="hero-document-arrow-up" class="mx-auto h-12 w-12 text-slate-300" />
               <div class="mt-4 flex text-sm leading-6 text-slate-600 justify-center">
-                <label for={@uploads.logbook_pdf.ref} class="relative cursor-pointer rounded-md bg-white font-semibold text-blue-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-2 hover:text-blue-500">
+                <label for={@uploads.logbook_pdf.ref} class="relative cursor-pointer rounded-md bg-white dark:bg-slate-900 font-semibold text-blue-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-2 hover:text-blue-500">
                   <span>Upload a file</span>
                   <.live_file_input upload={@uploads.logbook_pdf} class="sr-only" />
                 </label>
@@ -60,11 +60,11 @@
           </div>
           
           <%= for entry <- @uploads.logbook_pdf.entries do %>
-            <div class="mt-3 flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+            <div class="mt-3 flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
               <div class="flex items-center gap-3">
                 <.icon name="hero-document-text" class="w-6 h-6 text-blue-500" />
                 <div>
-                  <p class="text-sm font-medium text-slate-900 truncate max-w-[200px]"><%= entry.client_name %></p>
+                  <p class="text-sm font-medium text-slate-900 dark:text-white truncate max-w-[200px]"><%= entry.client_name %></p>
                   <p class="text-xs text-slate-500"><%= Float.round(entry.client_size / 1024 / 1024, 2) %> MB</p>
                 </div>
               </div>
@@ -83,7 +83,7 @@
         </div>
 
         <div class="flex justify-end gap-3 pt-2">
-          <.link navigate={~p"/portal/magang/logbook"} class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-xl transition-colors">
+          <.link navigate={~p"/portal/magang/logbook"} class="px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 rounded-xl transition-colors">
             Batal
           </.link>
           <button

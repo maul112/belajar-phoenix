@@ -1,7 +1,7 @@
-<div class="px-4 py-8 sm:px-6 lg:px-8 bg-slate-50 min-h-screen">
+<div class="px-4 py-8 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-800 min-h-screen">
   <div class="sm:flex sm:items-center sm:justify-between mb-8">
     <div>
-      <h1 class="text-3xl font-bold tracking-tight text-slate-900">Lowongan Magang</h1>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Lowongan Magang</h1>
       <p class="mt-2 text-sm text-slate-600">Kelola semua daftar lowongan magang aktif untuk mahasiswa UTM.</p>
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0">
@@ -15,9 +15,9 @@
     </div>
   </div>
 
-  <div class="overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 rounded-xl">
+  <div class="overflow-hidden bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 rounded-xl">
     <table class="min-w-full divide-y divide-slate-200">
-      <thead class="bg-slate-50">
+      <thead class="bg-slate-50 dark:bg-slate-800">
         <tr>
           <th scope="col" class="py-4 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Posisi & Perusahaan</th>
           <th scope="col" class="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Lokasi</th>
@@ -26,11 +26,11 @@
           <th scope="col" class="relative py-4 pl-3 pr-6 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
         </tr>
       </thead>
-      <tbody id="internship-openings" phx-update="stream" class="divide-y divide-slate-100 bg-white">
+      <tbody id="internship-openings" phx-update="stream" class="divide-y divide-slate-100 bg-white dark:bg-slate-900">
         <tr :for={{id, item} <- @streams.internship_openings} id={id} class="hover:bg-slate-50/50 transition-colors group">
           <td class="whitespace-nowrap py-5 pl-6 pr-3 text-sm">
             <div class="flex flex-col">
-              <span class="font-bold text-slate-900 text-base group-hover:text-blue-600 transition-colors"><%= item.title %></span>
+              <span class="font-bold text-slate-900 dark:text-white text-base group-hover:text-blue-600 transition-colors"><%= item.title %></span>
               <span class="text-slate-500"><%= item.company_name %></span>
             </div>
           </td>
@@ -75,7 +75,7 @@
     
     <div :if={Enum.empty?(@streams.internship_openings)} class="py-20 text-center">
       <.icon name="hero-briefcase" class="mx-auto h-12 w-12 text-slate-300" />
-      <h3 class="mt-2 text-sm font-semibold text-slate-900">Belum ada lowongan</h3>
+      <h3 class="mt-2 text-sm font-semibold text-slate-900 dark:text-white">Belum ada lowongan</h3>
       <p class="mt-1 text-sm text-slate-500">Mulai dengan membuat lowongan magang pertama Anda.</p>
     </div>
   </div>

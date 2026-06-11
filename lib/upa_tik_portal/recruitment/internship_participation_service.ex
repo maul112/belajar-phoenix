@@ -9,8 +9,8 @@ defmodule UpaTikPortal.Recruitment.InternshipParticipationService do
     Repo.all(
       from p in InternshipParticipation,
       where: is_nil(p.deleted_at),
-      preload: [:user, :internship_opening, :mentor],
-      order_by: [desc: p.inserted_at]
+      preload: [:user, [internship_opening: :division], :mentor],
+      order_by: [desc: fragment("CASE WHEN ? = 'accepted' THEN 1 ELSE 0 END", p.status), desc: p.inserted_at]
     )
   end
 
@@ -25,8 +25,8 @@ defmodule UpaTikPortal.Recruitment.InternshipParticipationService do
     offset = (page - 1) * per_page
     from(p in InternshipParticipation,
       where: is_nil(p.deleted_at),
-      preload: [:user, :internship_opening, :mentor],
-      order_by: [desc: p.inserted_at],
+      preload: [:user, [internship_opening: :division], :mentor],
+      order_by: [desc: fragment("CASE WHEN ? = 'accepted' THEN 1 ELSE 0 END", p.status), desc: p.inserted_at],
       limit: ^per_page,
       offset: ^offset
     )
@@ -37,21 +37,51 @@ defmodule UpaTikPortal.Recruitment.InternshipParticipationService do
 
   @doc "Daftar semua intern dengan status 'accepted' (intern aktif)"
   def list_active_interns(opts \\ []) do
-    from(p in InternshipParticipation,
-      where: p.status == "accepted" and is_nil(p.deleted_at),
-      preload: [:user, :internship_opening, :mentor],
-      order_by: [desc: p.start_date]
-    )
-    |> search_query(opts[:search])
-    |> Repo.all()
+    query =
+      from(p in InternshipParticipation,
+        join: u in assoc(p, :user),
+        join: o in assoc(p, :internship_opening),
+        where: p.status == "accepted" and is_nil(p.deleted_at) and u.role != "mentor" and u.role != "admin",
+        preload: [:user, [internship_opening: :division], :mentor],
+        order_by: [desc: fragment("? >= CURRENT_DATE OR ? IS NULL", o.end_date, o.end_date), desc: o.start_date]
+      )
+      |> search_query(opts[:search])
+
+    paginate_participation_query(query, opts)
+  end
+
+  defp paginate_participation_query(query, opts) do
+    page = Keyword.get(opts, :page)
+    per_page = Keyword.get(opts, :per_page, 10)
+
+    if page do
+      page = max(1, if(is_binary(page), do: String.to_integer(page), else: page))
+      offset = (page - 1) * per_page
+      
+      count_query = query |> exclude(:order_by) |> exclude(:preload) |> exclude(:select) |> select([p], count(p.id))
+      total_entries = Repo.one(count_query) || 0
+      total_pages = max(1, ceil(total_entries / per_page))
+
+      entries =
+        query
+        |> limit(^per_page)
+        |> offset(^offset)
+        |> Repo.all()
+
+      %{entries: entries, total_pages: total_pages, current_page: page}
+    else
+      Repo.all(query)
+    end
   end
 
   @doc "Daftar intern yang dibimbing oleh mentor tertentu"
   def list_by_mentor(mentor_id, opts \\ []) do
     from(p in InternshipParticipation,
-      where: p.mentor_id == ^mentor_id and p.status == "accepted" and is_nil(p.deleted_at),
-      preload: [:user, :internship_opening],
-      order_by: [desc: p.start_date]
+      join: u in assoc(p, :user),
+      join: o in assoc(p, :internship_opening),
+      where: p.mentor_id == ^mentor_id and p.status == "accepted" and is_nil(p.deleted_at) and u.role != "mentor" and u.role != "admin",
+      preload: [:user, [internship_opening: :division]],
+      order_by: [desc: o.start_date]
     )
     |> search_query(opts[:search])
     |> Repo.all()
@@ -71,12 +101,28 @@ defmodule UpaTikPortal.Recruitment.InternshipParticipationService do
     |> Repo.all()
   end
 
-  @doc "Ambil partisipasi aktif (accepted) milik user tertentu"
-  def get_active_participation_by_user(user_id) do
+  @doc "Ambil partisipasi accepted terbaru milik user tertentu"
+  def get_latest_accepted_participation(user_id) do
     Repo.one(
       from p in InternshipParticipation,
+      join: o in assoc(p, :internship_opening),
       where: p.user_id == ^user_id and p.status == "accepted" and is_nil(p.deleted_at),
-      preload: [:internship_opening, :mentor],
+      order_by: [desc: o.start_date],
+      preload: [[internship_opening: :division], :mentor],
+      limit: 1
+    )
+  end
+
+  @doc "Ambil magang aktif saat ini (accepted dan belum expired)"
+  def get_active_participation_by_user(user_id) do
+    today = UpaTikPortalWeb.Helpers.TimeHelper.today_wib()
+
+    Repo.one(
+      from p in InternshipParticipation,
+      join: o in assoc(p, :internship_opening),
+      where: p.user_id == ^user_id and p.status == "accepted" and is_nil(p.deleted_at) and (is_nil(o.end_date) or o.end_date >= ^today),
+      order_by: [desc: p.inserted_at],
+      preload: [[internship_opening: :division], :mentor],
       limit: 1
     )
   end
@@ -91,25 +137,20 @@ defmodule UpaTikPortal.Recruitment.InternshipParticipationService do
     from p in query,
       join: u in assoc(p, :user),
       join: o in assoc(p, :internship_opening),
-      where: ilike(u.name, ^"%#{search_term}%") or ilike(o.title, ^"%#{search_term}%") or ilike(p.university, ^"%#{search_term}%")
+      where: ilike(u.name, ^"%#{search_term}%") or ilike(o.title, ^"%#{search_term}%")
   end
 
   def get_internship_participation!(id) do
     Repo.one!(
       from p in InternshipParticipation,
       where: p.id == ^id and is_nil(p.deleted_at),
-      preload: [:user, :internship_opening, :mentor]
+      preload: [:user, [internship_opening: :division], :mentor]
     )
   end
 
   def create_internship_participation(attrs) do
     user_id = Map.get(attrs, "user_id") || Map.get(attrs, :user_id)
     opening_id = Map.get(attrs, "opening_id") || Map.get(attrs, :opening_id)
-    start_date_val = Map.get(attrs, "start_date") || Map.get(attrs, :start_date)
-    end_date_val = Map.get(attrs, "end_date") || Map.get(attrs, :end_date)
-
-    start_date = if is_binary(start_date_val), do: Date.from_iso8601!(start_date_val), else: start_date_val
-    end_date = if is_binary(end_date_val), do: Date.from_iso8601!(end_date_val), else: end_date_val
 
     existing =
       Repo.one(
@@ -118,12 +159,15 @@ defmodule UpaTikPortal.Recruitment.InternshipParticipationService do
         limit: 1
       )
 
+    opening = UpaTikPortal.Recruitment.InternshipOpeningService.get_internship_opening!(opening_id)
+
     overlap =
-      if start_date && end_date do
+      if opening.start_date && opening.end_date do
         Repo.one(
           from p in InternshipParticipation,
+          join: o in assoc(p, :internship_opening),
           where: p.user_id == ^user_id and p.status == "accepted" and is_nil(p.deleted_at)
-            and p.start_date <= ^end_date and p.end_date >= ^start_date,
+            and o.start_date <= ^opening.end_date and o.end_date >= ^opening.start_date,
           limit: 1
         )
       else
@@ -160,9 +204,14 @@ defmodule UpaTikPortal.Recruitment.InternshipParticipationService do
   end
   def update_status(participation, status, changed_by_id \\ nil)
   def update_status(%InternshipParticipation{} = participation, "accepted", changed_by_id) do
+    participation = Repo.preload(participation, :internship_opening)
+    start_date = participation.internship_opening.start_date
+    end_date = participation.internship_opening.end_date
+
     overlap_query = from p in InternshipParticipation,
+      join: o in assoc(p, :internship_opening),
       where: p.user_id == ^participation.user_id and p.status == "accepted" and is_nil(p.deleted_at)
-        and p.start_date <= ^participation.end_date and p.end_date >= ^participation.start_date
+        and o.start_date <= ^end_date and o.end_date >= ^start_date
         and p.id != ^participation.id,
       limit: 1
 

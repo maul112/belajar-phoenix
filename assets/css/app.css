@@ -108,6 +108,15 @@
 #qr-reader {
   border: none !important;
   box-shadow: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Memindahkan blok video kamera (scan_region) ke bagian Bawah (order 2), 
+   secara otomatis mendorong elemen dashboard (wrapper div rahasia milik html5-qrcode) ke bagian atas */
+#qr-reader__scan_region {
+  order: 2 !important;
+  margin-top: 1rem !important;
 }
 
 #qr-reader a,

@@ -15,7 +15,6 @@
         <.simple_form for={@form} phx-submit="save_application" phx-change="validate">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <%!-- Pendidikan --%>
-                <.input field={@form[:university]} type="text" label="Universitas" placeholder="Contoh: Universitas Trunojoyo Madura" />
                 <.input field={@form[:major]} type="text" label="Program Studi" placeholder="Contoh: Teknik Informatika" />
 
                 <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl border border-zinc-200/80 shadow-sm">
@@ -87,7 +86,7 @@
                                 phx-value-mode="link"
                                 class={[
                                 "w-1/2 py-1.5 text-xs font-medium rounded-md transition-all",
-                                @portfolio_mode == "link" && "bg-white text-zinc-900 shadow-sm",
+                                @portfolio_mode == "link" && "bg-white dark:bg-slate-900 text-zinc-900 shadow-sm",
                                 @portfolio_mode != "link" && "text-zinc-500 hover:text-zinc-800"
                                 ]}>
                                 Tautan Link
@@ -99,7 +98,7 @@
                                 phx-value-mode="file"
                                 class={[
                                 "w-1/2 py-1.5 text-xs font-medium rounded-md transition-all",
-                                @portfolio_mode == "file" && "bg-white text-zinc-900 shadow-sm",
+                                @portfolio_mode == "file" && "bg-white dark:bg-slate-900 text-zinc-900 shadow-sm",
                                 @portfolio_mode != "file" && "text-zinc-500 hover:text-zinc-800"
                                 ]}
                             >
@@ -132,10 +131,6 @@
                         </div>
                     </div>
                 </div>
-
-                <%!-- Periode Magang --%>
-                <.input field={@form[:start_date]} type="date" label="Tanggal Mulai" />
-                <.input field={@form[:end_date]} type="date" label="Tanggal Berakhir" />
             </div>
 
             <%!-- Status disembunyikan karena defaultnya 'applied' --%>
