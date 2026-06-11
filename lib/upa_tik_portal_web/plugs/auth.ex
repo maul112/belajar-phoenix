@@ -38,11 +38,66 @@ defmodule UpaTikPortalWeb.Plugs.Auth do
       %{role: "admin"} ->
         conn
 
+      %{role: "mentor"} ->
+        conn
+        |> put_status(:forbidden)
+        |> put_flash(:error, "Akses ditolak. Mentor tidak dapat mengakses halaman admin.")
+        |> redirect(to: "/mentor")
+        |> halt()
+
       _ ->
         conn
         |> put_status(:forbidden)
         |> put_flash(:error, "Akses ditolak. Hanya admin yang dapat mengakses halaman ini.")
-        |> redirect(to: "/portal/ajukan")
+        |> redirect(to: "/portal")
+        |> halt()
+    end
+  end
+
+  @doc "Wajib mentor — 403 jika bukan mentor"
+  def require_mentor(conn, _opts) do
+    case conn.assigns[:current_user] do
+      %{role: "mentor"} ->
+        conn
+
+      %{role: "admin"} ->
+        conn
+        |> put_status(:forbidden)
+        |> put_flash(:error, "Akses ditolak. Admin tidak dapat mengakses halaman mentor.")
+        |> redirect(to: "/admin")
+        |> halt()
+
+      _ ->
+        conn
+        |> put_status(:forbidden)
+        |> put_flash(:error, "Akses ditolak. Hanya mentor yang dapat mengakses halaman ini.")
+        |> redirect(to: "/portal")
+        |> halt()
+    end
+  end
+
+  @doc "Wajib mahasiswa — redirect jika admin/mentor"
+  def require_mahasiswa(conn, _opts) do
+    case conn.assigns[:current_user] do
+      %{role: "mahasiswa"} ->
+        conn
+
+      %{role: "admin"} ->
+        conn
+        |> put_flash(:error, "Admin tidak dapat mengakses portal mahasiswa.")
+        |> redirect(to: "/admin")
+        |> halt()
+
+      %{role: "mentor"} ->
+        conn
+        |> put_flash(:error, "Mentor tidak dapat mengakses portal mahasiswa.")
+        |> redirect(to: "/mentor")
+        |> halt()
+
+      _ ->
+        conn
+        |> put_flash(:error, "Akses ditolak.")
+        |> redirect(to: "/")
         |> halt()
     end
   end

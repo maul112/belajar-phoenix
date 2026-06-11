@@ -45,6 +45,10 @@ defmodule UpaTikPortalWeb.AuthController do
   end
 
   defp redirect_after_login(user) do
-    if user.role == "admin", do: ~p"/admin", else: ~p"/portal/"
+    case user.role do
+      "admin" -> ~p"/admin"
+      "mentor" -> ~p"/mentor"
+      _ -> ~p"/portal/"
+    end
   end
 end

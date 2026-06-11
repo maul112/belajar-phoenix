@@ -1,0 +1,77 @@
+<.navbarMentor active_tab={:dashboard} current_user={@current_user}>
+  <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Dashboard Mentor</h1>
+      <p class="text-slate-500 text-sm mt-1">Daftar peserta magang yang kamu bimbing</p>
+    </div>
+    <div class="mb-6 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+      <form phx-change="filter" class="w-full flex items-center">
+        <div class="relative w-full sm:w-1/2">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <.icon name="hero-magnifying-glass" class="h-5 w-5 text-slate-400" />
+          </div>
+          <input type="text" name="search" value={@search} phx-debounce="300" placeholder="Cari nama intern atau universitas..." class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+      </form>
+    </div>
+
+    <div id="mentor-interns" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="hidden only:col-span-2 only:flex only:flex-col only:items-center only:py-16 only:text-center">
+        <div class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+          <.icon name="hero-users" class="w-7 h-7 text-slate-400" />
+        </div>
+        <p class="font-semibold text-slate-700 dark:text-slate-300">Belum ada intern yang dibimbing</p>
+        <p class="text-sm text-slate-500 mt-1">Admin akan menugaskan intern kepadamu.</p>
+      </div>
+
+      <%= for {id, intern} <- @streams.interns do %>
+        <% today = presence_today(intern.id) %>
+        <div id={id} class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-400 to-blue-500 flex items-center justify-center text-white font-bold">
+              {String.at(intern.user.name, 0)}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-slate-900 dark:text-white truncate">{intern.user.name}</p>
+              <p class="text-xs text-slate-500 truncate">Universitas Trunojoyo Madura</p>
+            </div>
+            <div class={[
+              "w-2.5 h-2.5 rounded-full",
+              today && today.check_in && "bg-green-500",
+              is_nil(today) || is_nil(today.check_in) && "bg-slate-300"
+            ]} title={if today && today.check_in, do: "Sudah check-in", else: "Belum check-in"}></div>
+          </div>
+
+          <div class="text-xs text-slate-500 space-y-1 mb-3">
+            <p><span class="font-medium">Posisi:</span> {intern.internship_opening.title}</p>
+            <p><span class="font-medium">Periode:</span> {Calendar.strftime(intern.internship_opening.start_date, "%d %b")} – {Calendar.strftime(intern.internship_opening.end_date, "%d %b %Y")}</p>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 mb-4">
+            <div class="bg-blue-50 dark:bg-blue-900/30 rounded p-2 text-center border border-blue-100 dark:border-blue-800/50">
+              <p class="text-xs font-semibold text-blue-600">Hadir</p>
+              <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{intern.presence_stats.present}</p>
+            </div>
+            <div class="bg-red-50 dark:bg-red-900/30 rounded p-2 text-center border border-red-100 dark:border-red-800/50">
+              <p class="text-xs font-semibold text-red-600">Alpha</p>
+              <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{intern.presence_stats.absent}</p>
+            </div>
+            <div class="bg-indigo-50 dark:bg-indigo-900/30 rounded p-2 text-center border border-indigo-100 dark:border-indigo-800/50">
+              <p class="text-xs font-semibold text-indigo-600">Logbook</p>
+              <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{intern.log_stats.total}</p>
+            </div>
+            <div class="bg-orange-50 dark:bg-orange-900/30 rounded p-2 text-center border border-orange-100 dark:border-orange-800/50">
+              <p class="text-xs font-semibold text-orange-600">Keluhan</p>
+              <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{intern.complaint_stats.total}</p>
+            </div>
+          </div>
+
+          <.link navigate={~p"/mentor/intern/#{intern.id}"} class="w-full flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white text-slate-700 dark:text-slate-300 font-medium text-sm py-2 rounded-xl transition-colors">
+            Lihat Detail
+            <.icon name="hero-arrow-right" class="w-4 h-4" />
+          </.link>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</.navbarMentor>

@@ -7,11 +7,13 @@ defmodule UpaTikPortalWeb.Home.Index do
   @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
+    openings = UpaTikPortal.Recruitment.InternshipOpeningService.list_top_urgent_openings(3)
 
     {:ok,
      socket
-     |> assign(:page_title, "Profil Saya")
-     |> assign(user: user)}
+     |> assign(:page_title, "Dashboard Portal")
+     |> assign(user: user)
+     |> assign(:urgent_openings, openings)}
   end
 
   # 2. Reaksi Terhadap URL (Live Action)

@@ -53,6 +53,7 @@ defmodule UpaTikPortalWeb.CoreComponents do
     <div
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
+      phx-hook="Flash"
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class="toast toast-top toast-end z-50"
@@ -352,35 +353,40 @@ defmodule UpaTikPortalWeb.CoreComponents do
       end
 
     ~H"""
-    <table class="table table-zebra">
-      <thead>
-        <tr>
-          <th :for={col <- @col}>{col[:label]}</th>
-
-          <th :if={@action != []}><span class="sr-only">Actions</span></th>
-        </tr>
-      </thead>
-
-      <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
-        <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
-          <td
-            :for={col <- @col}
-            phx-click={@row_click && @row_click.(row)}
-            class={@row_click && "hover:cursor-pointer"}
-          >
-            {render_slot(col, @row_item.(row))}
-          </td>
-
-          <td :if={@action != []} class="w-0 font-semibold">
-            <div class="flex gap-4">
-              <%= for action <- @action do %>
-                {render_slot(action, @row_item.(row))}
-              <% end %>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="w-full overflow-x-auto rounded-lg shadow-sm border border-slate-200 dark:border-slate-800">
+      <table class="table table-zebra w-full min-w-max text-sm">
+        <thead>
+          <tr>
+            <th id={"col-#{col[:label]}"} :for={col <- @col} class="whitespace-nowrap px-4 py-3">{col[:label]}</th>
+            <%!-- <th :if={@action != []} class="px-4 py-3">
+              <span class="sr-only">Actions</span>
+            </th> --%>
+            <th :if={@action != []} class="px-4 py-3 font-semibold text-left">
+              Aksi
+            </th>
+          </tr>
+        </thead>
+        <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
+          <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
+            <td
+              id={"row-#{col[:label]}-#{@row_id && @row_id.(row)}"}
+              :for={col <- @col}
+              phx-click={@row_click && @row_click.(row)}
+              class={["whitespace-nowrap px-4 py-3", @row_click && "hover:cursor-pointer hover:bg-slate-50"]}
+            >
+              {render_slot(col, @row_item.(row))}
+            </td>
+            <td :if={@action != []} class="w-0 font-semibold whitespace-nowrap px-4 py-3">
+              <div class="flex gap-4 justify-end">
+                <%= for action <- @action do %>
+                  {render_slot(action, @row_item.(row))}
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     """
   end
 
@@ -401,7 +407,7 @@ defmodule UpaTikPortalWeb.CoreComponents do
   def list(assigns) do
     ~H"""
     <ul class="list">
-      <li :for={item <- @item} class="list-row">
+      <li id={"item-#{item.title}"} :for={item <- @item} class="list-row">
         <div class="list-col-grow">
           <div class="font-bold">{item.title}</div>
 
@@ -475,7 +481,28 @@ defmodule UpaTikPortalWeb.CoreComponents do
     #   Gettext.dgettext(UpaTikPortalWeb.Gettext, "errors", msg, opts)
     # end
 
-    Enum.reduce(opts, msg, fn {key, value}, acc ->
+    # Manual translation for common Ecto errors to Indonesian
+    translated_msg =
+      case msg do
+        "can't be blank" -> "tidak boleh kosong"
+        "has already been taken" -> "sudah digunakan"
+        "is invalid" -> "tidak valid"
+        "must be at least %{count} characters" -> "harus minimal %{count} karakter"
+        "must be at most %{count} characters" -> "maksimal %{count} karakter"
+        "is too short (minimum is %{count} characters)" -> "terlalu pendek (minimal %{count} karakter)"
+        "is too long (maximum is %{count} characters)" -> "terlalu panjang (maksimal %{count} karakter)"
+        "does not match confirmation" -> "tidak cocok dengan konfirmasi"
+        "should be %{count} character(s)" -> "harus %{count} karakter"
+        "should be at least %{count} character(s)" -> "minimal %{count} karakter"
+        "should be at most %{count} character(s)" -> "maksimal %{count} karakter"
+        "must be greater than %{number}" -> "harus lebih besar dari %{number}"
+        "must be greater than or equal to %{number}" -> "harus lebih besar atau sama dengan %{number}"
+        "must be less than %{number}" -> "harus lebih kecil dari %{number}"
+        "must be less than or equal to %{number}" -> "harus lebih kecil atau sama dengan %{number}"
+        _ -> msg
+      end
+
+    Enum.reduce(opts, translated_msg, fn {key, value}, acc ->
       String.replace(acc, "%{#{key}}", fn _ -> to_string(value) end)
     end)
   end
@@ -514,7 +541,7 @@ defmodule UpaTikPortalWeb.CoreComponents do
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div class="space-y-4">
         {render_slot(@inner_block, f)}
-        <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
+        <div id={"error-message" <> to_string(f.id)} :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
           {render_slot(action, f)}
         </div>
       </div>
@@ -543,24 +570,17 @@ defmodule UpaTikPortalWeb.CoreComponents do
     ~H"""
     <dialog
       id={@id}
-      #
-      Tambahkan
-      class
-      modal-open
-      secara
-      kondisional
-      di
-      sini
-      open={@show}
+
       class="modal modal-bottom sm:modal-middle"
       phx-remove={hide("##{@id}")}
     >
       <div class="modal-box max-w-2xl">
         <form method="dialog">
           <button
+            type="button"
             class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
             aria-label="close"
-            phx-click={JS.exec("data-cancel", to: "##{@id}")}
+            phx-click={hide_modal(@id)}
           >
             <.icon name="hero-x-mark" />
           </button>
@@ -569,10 +589,27 @@ defmodule UpaTikPortalWeb.CoreComponents do
         <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
       </div>
       <%!-- Klik di luar modal untuk menutup --%>
-      <div class="modal-backdrop bg-slate-900/50" phx-click={JS.exec("data-cancel", to: "##{@id}")}>
-        <button class="cursor-default">close</button>
+      <div class="modal-backdrop bg-slate-900/50" phx-click={hide_modal(@id)}>
+        <button type="button" class="cursor-default" phx-click={hide_modal(@id)}>close</button>
       </div>
     </dialog>
     """
+  end
+
+  @doc """
+  Tampilkan modal DaisyUI.
+  """
+  def show_modal(js \\ %JS{}, id) do
+    js
+    |> JS.add_class("modal-open", to: "##{id}")
+  end
+
+  @doc """
+  Sembunyikan modal DaisyUI.
+  """
+  def hide_modal(js \\ %JS{}, id) do
+    js
+    |> JS.remove_class("modal-open", to: "##{id}")
+    |> JS.pop_focus()
   end
 end

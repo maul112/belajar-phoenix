@@ -1,0 +1,85 @@
+<.navbar active_tab={:magang} current_user={@current_user}>
+  <Layouts.flash_group flash={@flash} />
+
+  <div class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Riwayat Magang</h1>
+        <p class="text-slate-500 text-sm mt-1">Daftar lowongan magang yang pernah Anda lamar</p>
+      </div>
+    </div>
+
+    <%!-- Search & Filter --%>
+    <div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+      <form phx-change="filter" class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <.icon name="hero-magnifying-glass" class="h-5 w-5 text-slate-400" />
+            </div>
+            <input type="text" name="search" value={@search} placeholder="Cari posisi magang..." class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+          </div>
+        </div>
+        <div class="sm:w-48">
+          <select name="status" class="block w-full py-2 px-3 border border-slate-300 bg-white dark:bg-slate-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            <option value="">Semua Status</option>
+            <option value="applied" selected={@status == "applied"}>Menunggu</option>
+            <option value="interview" selected={@status == "interview"}>Wawancara</option>
+            <option value="accepted" selected={@status == "accepted"}>Diterima</option>
+            <option value="rejected" selected={@status == "rejected"}>Ditolak</option>
+          </select>
+        </div>
+      </form>
+    </div>
+
+    <%!-- List of Participations --%>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <%= for participation <- @participations do %>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+          <div class="p-6 flex-1 flex flex-col">
+            <div class="flex justify-between items-start mb-4">
+              <span class={["px-3 py-1 text-xs font-semibold rounded-full border", status_badge(participation.status)]}>
+                {status_label(participation.status)}
+              </span>
+              <p class="text-xs text-slate-400 font-medium">{Calendar.strftime(participation.inserted_at, "%d %b %Y")}</p>
+            </div>
+            
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors line-clamp-2">
+              {participation.internship_opening.title}
+            </h3>
+            
+            <div class="mt-4 space-y-3">
+              <div class="flex items-center text-sm text-slate-600">
+                <.icon name="hero-calendar" class="w-4 h-4 mr-2 text-slate-400" />
+                <span>Mulai: <%= if participation.internship_opening.start_date, do: Calendar.strftime(participation.internship_opening.start_date, "%d %b %Y"), else: "-" %></span>
+              </div>
+              <div class="flex items-center text-sm text-slate-600">
+                <.icon name="hero-calendar-days" class="w-4 h-4 mr-2 text-slate-400" />
+                <span>Selesai: <%= if participation.internship_opening.end_date, do: Calendar.strftime(participation.internship_opening.end_date, "%d %b %Y"), else: "-" %></span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-100 mt-auto">
+            <.link navigate={~p"/portal/magang/#{participation.id}"} class="w-full inline-flex justify-center items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+              <%= if participation.status == "accepted", do: "Lihat Detail Magang", else: "Lihat Detail Lamaran" %>
+            </.link>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    
+    <%= if Enum.empty?(@participations) do %>
+      <div class="text-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <.icon name="hero-document-magnifying-glass" class="w-8 h-8 text-slate-400" />
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Belum Ada Riwayat Magang</h3>
+        <p class="text-slate-500 mt-1">Anda belum melamar lowongan magang apapun.</p>
+        <.link navigate={~p"/portal/lowongan"} class="mt-6 inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+          Cari Lowongan Magang
+        </.link>
+      </div>
+    <% end %>
+  </div>
+</.navbar>

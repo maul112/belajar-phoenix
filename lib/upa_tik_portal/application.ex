@@ -12,6 +12,7 @@ defmodule UpaTikPortal.Application do
       UpaTikPortal.Repo,
       {DNSCluster, query: Application.get_env(:upa_tik_portal, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: UpaTikPortal.PubSub},
+      UpaTikPortal.Recruitment.QrTokenStore,
       # Start to serve requests, typically the last entry
       UpaTikPortalWeb.Endpoint
     ]

@@ -6,42 +6,48 @@ defmodule UpaTikPortal.Accounts do
   alias UpaTikPortal.Repo
   alias UpaTikPortal.Accounts.User
 
-  @admin_emails ["yoelflemming8@gmail.com", "kingkapol10@gmail.com"]
+  @admin_emails ["yoelflemming8@gmail.com", "kingkapol10@gmail.com", "stokkgun7@gmail.com", "230411100159@student.trunojoyo.ac.id"]
+  # "tsukiaka313@gmail.com"
 
   @doc """
   Mendapatkan atau membuat user dari data Google OAuth.
   Digunakan saat callback dari Ueberauth.
   """
   def get_or_create_user_from_google(%{info: info, uid: uid}) do
-    role = if info.email in @admin_emails, do: "admin", else: "mahasiswa"
+    base_role = if info.email in @admin_emails, do: "admin", else: "mahasiswa"
 
-    case Repo.get_by(User, google_uid: uid) do
+    case Repo.get_by(User, google_uid: uid) || Repo.get_by(User, email: info.email) do
       nil ->
-        # Cek apakah email sudah ada (user registrasi manual sebelumnya)                                                                                       
-        case Repo.get_by(User, email: info.email) do
-          nil ->
-            %User{}
-            |> User.changeset(%{
-              name: info.name,
-              email: info.email,
-              google_uid: uid,
-              role: role
-            })
-            |> Repo.insert()
-
-          existing_user ->
-            existing_user
-            |> User.changeset(%{google_uid: uid, name: info.name, role: role})
-            |> Repo.update()
-        end
+        %User{}
+        |> User.changeset(%{
+          name: info.name,
+          email: info.email,
+          google_uid: uid,
+          avatar_url: Map.get(info, :image),
+          role: base_role
+        })
+        |> Repo.insert()
 
       existing_user ->
-        # Pastikan role diupdate jika email masuk daftar admin belakangan
+        # Jangan downgrade role jika user sudah menjadi mentor atau admin
+        final_role =
+          if base_role == "admin" do
+            "admin"
+          else
+            if existing_user.role in ["admin", "mentor"], do: existing_user.role, else: base_role
+          end
+
         existing_user
-        |> User.changeset(%{role: role})
+        |> User.changeset(%{
+          google_uid: uid,
+          name: info.name,
+          avatar_url: Map.get(info, :image) || existing_user.avatar_url,
+          role: final_role
+        })
         |> Repo.update()
     end
   end
+
 
   def get_user!(id), do: Repo.get!(User, id)
 
@@ -53,6 +59,11 @@ defmodule UpaTikPortal.Accounts do
     user
     |> User.changeset(%{role: role})
     |> Repo.update()
+  end
+
+  @doc "Daftar semua user dengan role mentor (untuk select assign mentor)"
+  def list_mentors do
+    Repo.all(from u in User, where: u.role == "mentor", order_by: u.name)
   end
 
   def update_user(%User{} = user, attrs) do

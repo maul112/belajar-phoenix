@@ -1,0 +1,135 @@
+<.navbarAdmin current_user={@current_user} active_tab={:pengajuan}>
+  <Layouts.flash_group flash={@flash} />
+
+  <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/admin/pengajuan" class="p-2 text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm transition-colors">
+          <.icon name="hero-arrow-left" class="w-5 h-5" />
+        </a>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Verifikasi Pengajuan</h1>
+      </div>
+      <span class={["px-3 py-1 rounded-full text-xs font-semibold", status_class(@request.status)]}>
+        <%= status_label(@request.status) %>
+      </span>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800">
+        <div>
+          <p class="text-xs text-slate-500 font-semibold mb-1">ID Pengajuan #<%= @request.id %></p>
+          <p class="text-sm text-slate-700 dark:text-slate-300 font-medium">Dikirim: <%= Calendar.strftime(@request.inserted_at, "%d %b %Y %H:%M") %></p>
+        </div>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+          <%= format_type(@request.request_type) %>
+        </span>
+      </div>
+
+      <div class="p-6 md:p-8 space-y-8">
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="space-y-6">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Pemohon</p>
+              <h2 class="text-xl font-bold text-slate-900 dark:text-white"><%= @request.full_name %></h2>
+              <p class="text-sm font-semibold text-blue-600 mt-1"><%= @request.nim %></p>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+              <p class="text-xs font-semibold text-slate-500 mb-1">Status Akun SSO Saat Ini</p>
+              <p class="font-bold text-slate-900 dark:text-white text-sm capitalize"><%= @request.user.role %></p>
+              <p class="text-xs text-slate-500 mt-1">Terverifikasi: <%= @request.user.email %></p>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+              <p class="text-xs font-semibold text-blue-600 mb-2 uppercase tracking-wider">Email Target Aktivasi</p>
+              <p class="text-lg font-bold text-blue-900 break-all"><%= @request.email_requested %></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="border-t border-slate-200 dark:border-slate-700 pt-8">
+           <div class="flex justify-between items-center mb-4">
+             <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Lampiran KTM</h3>
+             <a href={@request.ktm_photo_url || "#"} target="_blank" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+               Lihat Ukuran Penuh <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
+             </a>
+           </div>
+           <div class="bg-slate-100 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-4">
+              <img src={@request.ktm_photo_url || ""} class="w-full max-h-96 object-contain rounded-lg bg-white dark:bg-slate-900 shadow-sm" alt="KTM Image">
+           </div>
+        </section>
+
+        <%= if @request.status == "pending" do %>
+          <section class="border-t border-slate-200 dark:border-slate-700 pt-8 flex flex-col sm:flex-row gap-4">
+            <button phx-click="approve" class="flex-1 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors text-sm flex items-center justify-center gap-2">
+              <.icon name="hero-check" class="w-5 h-5" />
+              Setujui Permohonan
+            </button>
+            <button phx-click="reject" class="flex-1 py-3 bg-white dark:bg-slate-900 border border-red-200 text-red-600 font-semibold rounded-xl hover:bg-red-50 transition-colors text-sm flex items-center justify-center gap-2">
+              <.icon name="hero-x-mark" class="w-5 h-5" />
+              Tolak Pengajuan
+            </button>
+          </section>
+        <% end %>
+
+        <%= if @request.status == "disetujui" do %>
+          <section class="border-t border-slate-200 dark:border-slate-700 pt-8">
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-white dark:bg-slate-900 rounded-lg flex items-center justify-center text-blue-600 shadow-sm">
+                  <.icon name="hero-envelope" class="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-blue-900">Panel Kontrol OTP</h4>
+                  <p class="text-xs text-blue-700">Kirim ke: <span class="font-semibold"><%= @request.user.email %></span></p>
+                </div>
+              </div>
+
+              <.form for={%{}} phx-submit="send-otp" class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-1 relative">
+                  <input type="text"
+                    name="manual_otp"
+                    value={@manual_otp}
+                    placeholder="Input Password Manual (Saran: 12345)"
+                    class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" />
+                  <.icon name="hero-key" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-blue-400" />
+                </div>
+                <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm disabled:opacity-50 flex items-center justify-center gap-2" disabled={@sending_otp}>
+                  <%= if @sending_otp, do: "Mengirim...", else: "Kirim Kredensial" %>
+                </button>
+                <button type="button" phx-click="debug-email" phx-disable-with="Sedang Test..." class="px-4 py-2.5 bg-slate-200 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-300 transition-colors flex items-center justify-center gap-1">
+                  <span>⚠️ Test</span>
+                </button>
+              </.form>
+              
+              <%= if @otp_sent do %>
+                <p class="mt-3 text-green-600 text-xs font-semibold flex items-center gap-1">
+                  <.icon name="hero-check-circle" class="w-4 h-4" />
+                  Terakhir Terkirim: <%= Calendar.strftime(@request.updated_at, "%H:%M") %>
+                </p>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+
+        <section class="border-t border-slate-200 dark:border-slate-700 pt-8">
+          <div class="bg-slate-50 dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-sm font-bold text-slate-900 dark:text-white">Catatan Administratif</h4>
+              <button phx-click="save-notes" class="text-xs font-semibold px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors">Simpan</button>
+            </div>
+            <textarea
+              phx-change="update-field"
+              name="notes"
+              rows="3"
+              placeholder="Tuliskan catatan internal atau instruksi khusus di sini..."
+              class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none"
+            ><%= @notes %></textarea>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</.navbarAdmin>

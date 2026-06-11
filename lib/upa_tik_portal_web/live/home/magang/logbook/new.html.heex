@@ -1,0 +1,101 @@
+<.navbar active_tab={:magang} current_user={@current_user}>
+  <Layouts.flash_group flash={@flash} />
+
+  <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+
+    <.link navigate={~p"/portal/magang/logbook"} class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-blue-600 transition-colors">
+      <.icon name="hero-arrow-left" class="w-4 h-4" />
+      Kembali ke Logbook
+    </.link>
+
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Tambah Weekly Log</h1>
+      <p class="text-slate-500 text-sm mt-1">Catat kegiatan yang kamu lakukan minggu ini</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+      <.form for={@form} id="weekly-log-form" phx-change="validate" phx-submit="save" class="space-y-5">
+
+        <div class="grid grid-cols-3 gap-4">
+          <.input field={@form[:week_number]} type="number" label="Minggu ke-" min="1" />
+          <.input field={@form[:week_start_date]} type="date" label="Tanggal Mulai" />
+          <.input field={@form[:week_end_date]} type="date" label="Tanggal Selesai" />
+        </div>
+
+        <.input
+          field={@form[:activity_title]}
+          type="text"
+          label="Judul Kegiatan"
+          placeholder="Contoh: Pengembangan API Endpoint Laporan"
+        />
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            Deskripsi Kegiatan
+          </label>
+          <textarea
+            id={@form[:activity_description].id}
+            name={@form[:activity_description].name}
+            rows="6"
+            placeholder="Tuliskan detail kegiatan yang dilakukan selama seminggu ini..."
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          >{Phoenix.HTML.Form.normalize_value("textarea", @form[:activity_description].value)}</textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            File Laporan (Opsional, PDF)
+          </label>
+          <div class="mt-2 flex justify-center rounded-xl border border-dashed border-slate-300 px-6 py-6" phx-drop-target={@uploads.logbook_pdf.ref}>
+            <div class="text-center">
+              <.icon name="hero-document-arrow-up" class="mx-auto h-12 w-12 text-slate-300" />
+              <div class="mt-4 flex text-sm leading-6 text-slate-600 justify-center">
+                <label for={@uploads.logbook_pdf.ref} class="relative cursor-pointer rounded-md bg-white dark:bg-slate-900 font-semibold text-blue-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-2 hover:text-blue-500">
+                  <span>Upload a file</span>
+                  <.live_file_input upload={@uploads.logbook_pdf} class="sr-only" />
+                </label>
+                <p class="pl-1">or drag and drop</p>
+              </div>
+              <p class="text-xs leading-5 text-slate-500">PDF up to 5MB</p>
+            </div>
+          </div>
+          
+          <%= for entry <- @uploads.logbook_pdf.entries do %>
+            <div class="mt-3 flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+              <div class="flex items-center gap-3">
+                <.icon name="hero-document-text" class="w-6 h-6 text-blue-500" />
+                <div>
+                  <p class="text-sm font-medium text-slate-900 dark:text-white truncate max-w-[200px]"><%= entry.client_name %></p>
+                  <p class="text-xs text-slate-500"><%= Float.round(entry.client_size / 1024 / 1024, 2) %> MB</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <progress value={entry.progress} max="100" class="w-24 h-2 rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-slate-200 [&::-webkit-progress-value]:bg-blue-600"></progress>
+                <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref} class="text-slate-400 hover:text-red-500">
+                  <.icon name="hero-x-mark" class="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          <% end %>
+          
+          <%= for err <- upload_errors(@uploads.logbook_pdf) do %>
+            <p class="text-red-500 text-xs mt-1"><%= error_to_string(err) %></p>
+          <% end %>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <.link navigate={~p"/portal/magang/logbook"} class="px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 rounded-xl transition-colors">
+            Batal
+          </.link>
+          <button
+            type="submit"
+            id="save-log-btn"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2"
+          >
+            <.icon name="hero-paper-airplane" class="w-4 h-4" />
+            Simpan Log
+          </button>
+        </div>
+      </.form>
+    </div>
+  </div>
+</.navbar>

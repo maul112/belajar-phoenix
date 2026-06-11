@@ -1,0 +1,42 @@
+<.navbarAdmin current_user={@current_user} active_tab={:lowongan}>
+    <div class="max-w-7xl mx-auto shadow-sm ring-1 ring-slate-200 rounded-xl p-8 mt-8">
+      <div class="max-w-7xl mx-auto">
+        <.link navigate={~p"/admin/lowongan"} class="text-sm font-semibold leading-6 hover:text-blue-500 flex items-center mb-6">
+          <.icon name="hero-arrow-left" class="w-4 h-4 mr-1" /> Kembali ke Daftar
+        </.link>
+      </div>
+      <header class="mb-10">
+        <h1 class="text-2xl font-bold"><%= @page_title %></h1>
+        <p class="mt-2 text-sm">Lengkapi detail lowongan magang untuk dipublikasikan.</p>
+      </header>
+
+      <.simple_form for={@form} phx-change="validate" phx-submit="save">
+        <div class="space-y-6">
+          <.input field={@form[:title]} type="text" label="Judul Lowongan" placeholder="Contoh: Frontend Engineer" />
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <.input field={@form[:division_id]} type="select" label="Divisi" options={@divisions} prompt="Pilih Divisi" />
+            <.input field={@form[:quota]} type="number" label="Kuota (Orang)" />
+          </div>
+
+          <.input field={@form[:description]} type="textarea" label="Deskripsi Pekerjaan" rows="5" />
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <.input field={@form[:closing_date]} type="date" label="Batas Akhir Pendaftaran" />
+            <.input field={@form[:start_date]} type="date" label="Tanggal Mulai Magang" />
+            <.input field={@form[:end_date]} type="date" label="Tanggal Selesai Magang" />
+          </div>
+
+          <div class="flex items-center pt-2">
+            <.input field={@form[:is_active]} type="checkbox" label="Langsung Aktifkan Lowongan" />
+          </div>
+        </div>
+
+        <:actions>
+          <.button class="w-full justify-center rounded-lg text-white py-3 bg-blue-600 hover:bg-blue-700">
+            Publikasikan Lowongan
+          </.button>
+        </:actions>
+      </.simple_form>
+    </div>
+</.navbarAdmin>

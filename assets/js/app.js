@@ -23,13 +23,14 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/upa_tik_portal"
+import customHooks from "./hooks"
 import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, ...customHooks},
 })
 
 // Show progress bar on live navigation and form submits
@@ -39,6 +40,70 @@ window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()
+
+// --- Custom Confirm Modal Logic ---
+let confirmModalTarget = null;
+
+window.addEventListener("click", e => {
+  let target = e.target.closest("[data-confirm]");
+  if (target && !target.hasAttribute("data-confirm-resolved")) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    
+    confirmModalTarget = target;
+    const modalMsg = target.getAttribute("data-confirm");
+    const modal = document.getElementById("custom-confirm-modal");
+    const msgEl = document.getElementById("custom-confirm-msg");
+    
+    if(modal && msgEl) {
+      msgEl.innerText = modalMsg;
+      modal.classList.remove("hidden");
+      setTimeout(() => modal.classList.remove("opacity-0"), 10);
+    }
+  }
+}, true);
+
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("custom-confirm-modal");
+  const btnOk = document.getElementById("custom-confirm-ok");
+  const btnCancel = document.getElementById("custom-confirm-cancel");
+  
+  const closeModal = () => {
+    if(!modal) return;
+    modal.classList.add("opacity-0");
+    setTimeout(() => modal.classList.add("hidden"), 150);
+  };
+
+  if(btnCancel) {
+    btnCancel.addEventListener("click", () => {
+      confirmModalTarget = null;
+      closeModal();
+    });
+  }
+
+  if(btnOk) {
+    btnOk.addEventListener("click", () => {
+      if(confirmModalTarget) {
+        // Simpan pesan asli lalu hapus agar Phoenix JS tidak memunculkan native confirm
+        const originalMessage = confirmModalTarget.getAttribute("data-confirm");
+        confirmModalTarget.removeAttribute("data-confirm");
+        confirmModalTarget.setAttribute("data-confirm-resolved", "true");
+        
+        confirmModalTarget.click();
+        
+        setTimeout(() => {
+          if(confirmModalTarget) {
+            confirmModalTarget.setAttribute("data-confirm", originalMessage);
+            confirmModalTarget.removeAttribute("data-confirm-resolved");
+          }
+          confirmModalTarget = null;
+        }, 100);
+      }
+      closeModal();
+    });
+  }
+});
+// ----------------------------------
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()

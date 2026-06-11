@@ -1,0 +1,282 @@
+<.navbar active_tab={:magang} current_user={@current_user}>
+  <Layouts.flash_group flash={@flash} />
+
+  <div class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <.link navigate={~p"/portal/magang"} class="p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors">
+          <.icon name="hero-arrow-left" class="w-5 h-5 text-slate-600" />
+        </.link>
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Dashboard Magang</h1>
+          <p class="text-slate-500 text-sm mt-1">Detail partisipasi magang Anda</p>
+        </div>
+      </div>
+    </div>
+
+    <%!-- Info Card Partisipasi --%>
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-blue-100 text-sm font-medium">Posisi Magang</p>
+          <h2 class="text-xl font-bold mt-1">{@participation.internship_opening.title}</h2>
+          <p class="text-blue-100 text-sm mt-1">{(if @participation.internship_opening.division, do: @participation.internship_opening.division.name, else: "-")}</p>
+        </div>
+        <span class="bg-white dark:bg-slate-900/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/30">
+          <%= if @is_completed, do: "Selesai", else: "Aktif" %>
+        </span>
+      </div>
+
+      <div class="mt-4 pt-4 border-t border-white/20 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div>
+          <p class="text-blue-200 text-xs">Mulai</p>
+          <p class="font-semibold text-sm"><%= if @participation.internship_opening.start_date, do: Calendar.strftime(@participation.internship_opening.start_date, "%d %b %Y"), else: "-" %></p>
+        </div>
+        <div>
+          <p class="text-blue-200 text-xs">Selesai</p>
+          <p class="font-semibold text-sm"><%= if @participation.internship_opening.end_date, do: Calendar.strftime(@participation.internship_opening.end_date, "%d %b %Y"), else: "-" %></p>
+        </div>
+        <div>
+          <p class="text-blue-200 text-xs">Universitas</p>
+          <p class="font-semibold text-sm">Universitas Trunojoyo Madura</p>
+        </div>
+        <div>
+          <p class="text-blue-200 text-xs">Mentor</p>
+          <p class="font-semibold text-sm">
+            <%= if @participation.mentor do %>
+              {@participation.mentor.name}
+            <% else %>
+              Belum ditentukan
+            <% end %>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <%= if not @is_active and not @is_completed do %>
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+        <h3 class="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <.icon name="hero-document-text" class="w-5 h-5 text-blue-500" />
+          Dokumen Lamaran
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <%= if @participation.cv_url do %>
+            <a href={@participation.cv_url} target="_blank" class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:bg-slate-800 hover:border-blue-300 transition-colors">
+              <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><.icon name="hero-document" class="w-5 h-5"/></div>
+              <div class="text-sm">
+                <p class="font-semibold text-slate-700 dark:text-slate-300">CV</p>
+                <p class="text-xs text-slate-500">Lihat File</p>
+              </div>
+            </a>
+          <% end %>
+          <%= if @participation.portfolio_url do %>
+            <a href={@participation.portfolio_url} target="_blank" class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:bg-slate-800 hover:border-blue-300 transition-colors">
+              <div class="p-2 bg-purple-50 text-purple-600 rounded-lg"><.icon name="hero-briefcase" class="w-5 h-5"/></div>
+              <div class="text-sm">
+                <p class="font-semibold text-slate-700 dark:text-slate-300">Portfolio</p>
+                <p class="text-xs text-slate-500">Lihat File/Link</p>
+              </div>
+            </a>
+          <% end %>
+          <%= if @participation.surat_pengantar_url do %>
+            <a href={@participation.surat_pengantar_url} target="_blank" class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:bg-slate-800 hover:border-blue-300 transition-colors">
+              <div class="p-2 bg-green-50 text-green-600 rounded-lg"><.icon name="hero-envelope" class="w-5 h-5"/></div>
+              <div class="text-sm">
+                <p class="font-semibold text-slate-700 dark:text-slate-300">Surat Pengantar</p>
+                <p class="text-xs text-slate-500">Lihat File</p>
+              </div>
+            </a>
+          <% end %>
+          <%= if @participation.transkrip_nilai_url do %>
+            <a href={@participation.transkrip_nilai_url} target="_blank" class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:bg-slate-800 hover:border-blue-300 transition-colors">
+              <div class="p-2 bg-orange-50 text-orange-600 rounded-lg"><.icon name="hero-academic-cap" class="w-5 h-5"/></div>
+              <div class="text-sm">
+                <p class="font-semibold text-slate-700 dark:text-slate-300">Transkrip</p>
+                <p class="text-xs text-slate-500">Lihat File</p>
+              </div>
+            </a>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= if @is_completed or @is_active do %>
+      <%= if @is_completed do %>
+        <%!-- Completed Internship Notice --%>
+        <div class="bg-green-50 rounded-2xl border border-green-200 p-6 shadow-sm">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center shrink-0">
+              <.icon name="hero-check-badge" class="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h3 class="font-bold text-green-900 text-lg">Magang Anda Telah Selesai!</h3>
+              <p class="text-green-800 text-sm mt-1">Terima kasih atas kontribusi dan dedikasi Anda selama masa magang di UPA TIK. Anda tetap dapat melihat rekam jejak magang Anda pada menu di bawah ini.</p>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <%!-- Check-in / Check-out Card --%>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <h3 class="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <.icon name="hero-clock" class="w-5 h-5 text-blue-500" />
+            Presensi Hari Ini
+          </h3>
+  
+          <%= if @today_presence do %>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-6">
+                <div class="text-center">
+                  <p class="text-xs text-slate-500">Check-in</p>
+                  <p class="font-bold text-slate-900 dark:text-white text-lg">
+                    <%= if @today_presence.check_in do %>
+                      {Calendar.strftime(@today_presence.check_in, "%H:%M")}
+                    <% else %>
+                      --:--
+                    <% end %>
+                  </p>
+                </div>
+                <div class="w-8 h-px bg-slate-300"></div>
+                <div class="text-center">
+                  <p class="text-xs text-slate-500">Check-out</p>
+                  <p class="font-bold text-slate-900 dark:text-white text-lg">
+                    <%= if @today_presence.check_out do %>
+                      {Calendar.strftime(@today_presence.check_out, "%H:%M")}
+                    <% else %>
+                      --:--
+                    <% end %>
+                  </p>
+                </div>
+              </div>
+  
+              <%= if is_nil(@today_presence.check_out) do %>
+                <button
+                  phx-click={show_modal("qr-modal")}
+                  class="bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2"
+                >
+                  <.icon name="hero-qr-code" class="w-5 h-5" />
+                  Tampilkan QR
+                </button>
+              <% else %>
+                <span class="text-green-600 font-semibold text-sm flex items-center gap-1">
+                  <.icon name="hero-check-circle" class="w-5 h-5" />
+                  Selesai hari ini
+                </span>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="flex items-center justify-between">
+              <p class="text-slate-500 text-sm">Kamu belum check-in hari ini.</p>
+              <button
+                phx-click={show_modal("qr-modal")}
+                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2"
+              >
+                <.icon name="hero-qr-code" class="w-5 h-5" />
+                Tampilkan QR
+              </button>
+            </div>
+          <% end %>
+        </div>
+  
+        <.modal id="qr-modal">
+          <div class="text-center p-2">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">QR Code Presensi</h3>
+            <p class="text-sm text-slate-500 mb-6">Arahkan layar ini ke Scanner QR Mentor atau Admin untuk melakukan Check-in dan Check-out.</p>
+            <div class="bg-white p-6 border-2 border-slate-100 rounded-2xl max-w-[280px] w-full mx-auto shadow-sm flex items-center justify-center overflow-hidden">
+              <div class="w-full h-auto max-w-full [&>svg]:w-full [&>svg]:h-auto">
+                <%= raw(@qr_svg) %>
+              </div>
+            </div>
+          </div>
+        </.modal>
+      <% end %>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <%!-- Presensi --%>
+        <.link navigate={if @is_completed, do: "#", else: ~p"/portal/magang/presensi"} class={["bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm transition-all group", if(@is_completed, do: "opacity-80 cursor-default", else: "hover:shadow-md hover:border-blue-300")]}>
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <.icon name="hero-calendar-days" class="w-5 h-5 text-green-600" />
+            </div>
+            <%= if not @is_completed do %>
+              <.icon name="hero-arrow-right" class="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            <% end %>
+          </div>
+          <p class="text-2xl font-bold text-slate-900 dark:text-white">{@presence_stats.present}</p>
+          <p class="text-sm text-slate-500">Hari Hadir</p>
+          <p class="text-xs text-slate-400 mt-1">{@presence_stats.total} total presensi tercatat</p>
+        </.link>
+  
+        <%!-- Logbook --%>
+        <.link navigate={if @is_completed, do: "#", else: ~p"/portal/magang/logbook"} class={["bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm transition-all group", if(@is_completed, do: "opacity-80 cursor-default", else: "hover:shadow-md hover:border-blue-300")]}>
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <.icon name="hero-book-open" class="w-5 h-5 text-blue-600" />
+            </div>
+            <%= if not @is_completed do %>
+              <.icon name="hero-arrow-right" class="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            <% end %>
+          </div>
+          <p class="text-2xl font-bold text-slate-900 dark:text-white">{@log_stats.total}</p>
+          <p class="text-sm text-slate-500">Weekly Log</p>
+          <p class="text-xs text-slate-400 mt-1">{@log_stats.with_feedback} sudah dapat feedback</p>
+        </.link>
+  
+        <%!-- Complaint --%>
+        <.link navigate={if @is_completed, do: "#", else: ~p"/portal/magang/complaint"} class={["bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm transition-all group", if(@is_completed, do: "opacity-80 cursor-default", else: "hover:shadow-md hover:border-blue-300")]}>
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+              <.icon name="hero-chat-bubble-left-ellipsis" class="w-5 h-5 text-orange-600" />
+            </div>
+            <%= if not @is_completed do %>
+              <.icon name="hero-arrow-right" class="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            <% end %>
+          </div>
+          <p class="text-2xl font-bold text-slate-900 dark:text-white">{@complaint_stats.pending}</p>
+          <p class="text-sm text-slate-500">Keluhan Pending</p>
+          <p class="text-xs text-slate-400 mt-1">{@complaint_stats.total} total keluhan dikirim</p>
+        </.link>
+      </div>
+    <% else %>
+      <%= if @participation.status != "accepted" and @participation.status != "rejected" do %>
+        <div class="bg-blue-50 rounded-2xl border border-blue-200 p-6 shadow-sm">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+              <.icon name="hero-information-circle" class="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 class="font-bold text-blue-900 text-lg">Lamaran Anda Sedang Diproses</h3>
+              <p class="text-blue-800 text-sm mt-1">Silakan tunggu konfirmasi selanjutnya dari UPA TIK. Anda akan dapat mengakses menu interaktif jika lamaran Anda telah diterima dan sudah memasuki tanggal mulai.</p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      <%= if @participation.status == "rejected" do %>
+        <div class="bg-red-50 rounded-2xl border border-red-200 p-6 shadow-sm">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+              <.icon name="hero-x-circle" class="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <h3 class="font-bold text-red-900 text-lg">Lamaran Anda Ditolak</h3>
+              <p class="text-red-800 text-sm mt-1">Mohon maaf, lamaran Anda tidak dapat diproses saat ini. Jangan patah semangat dan coba lagi pada kesempatan magang berikutnya.</p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      <%= if @participation.status == "accepted" and not @is_active and not @is_completed do %>
+        <div class="bg-indigo-50 rounded-2xl border border-indigo-200 p-6 shadow-sm">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center shrink-0">
+              <.icon name="hero-clock" class="w-6 h-6 text-indigo-600" />
+            </div>
+            <div>
+              <h3 class="font-bold text-indigo-900 text-lg">Magang Belum Dimulai</h3>
+              <p class="text-indigo-800 text-sm mt-1">Lamaran Anda telah diterima! Menu interaktif magang Anda akan dapat diakses saat tanggal mulai magang telah tiba.</p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+  </div>
+</.navbar>

@@ -85,6 +85,11 @@ config :waffle,
   bucket: System.get_env("MINIO_BUCKET", "upa-tik-uploads"),
   asset_host: System.get_env("MINIO_ENDPOINT", "http://localhost:9100")
 
+config :upa_tik_portal,
+  minio_bucket: System.get_env("MINIO_BUCKET"),
+  minio_endpoint: System.get_env("MINIO_ENDPOINT"),
+  qr_secret_salt: System.get_env("QR_SECRET_SALT", "presensi_utm_magang_2026")
+
 config :ex_aws,
   access_key_id: System.get_env("MINIO_ACCESS_KEY"),
   secret_access_key: System.get_env("MINIO_SECRET_KEY")

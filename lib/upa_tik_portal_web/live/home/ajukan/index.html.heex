@@ -1,0 +1,150 @@
+<.navbar active_tab={:ajukan} current_user={@current_user}>
+  <Layouts.flash_group flash={@flash} />
+  <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <.heading_page
+      heading_text_primary="Pengajuan"
+      heading_text_secondary="Aktivasi"
+      sub_heading_text="Lengkapi data di bawah ini untuk pemrosesan akun email kampus Anda secara profesional."
+    />
+
+    <%= if @submitted do %>
+      <div class="max-w-7xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-12 text-center shadow-sm mt-8">
+        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+          <.icon name="hero-check-circle" class="w-10 h-10 text-blue-600" />
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Berhasil Terkirim!</h2>
+        <p class="text-slate-500 mb-8 text-sm">Data Anda telah masuk ke sistem antrean kami. Mohon tunggu proses verifikasi.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+          <a href="/portal/status" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors text-sm flex items-center justify-center gap-2">
+            <span>Pantau Status</span>
+            <.icon name="hero-arrow-right" class="w-4 h-4" />
+          </a>
+          <button phx-click="reset" class="px-6 py-3 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:bg-slate-800 transition-colors border border-slate-300 text-sm">
+            Buat Pengajuan Baru
+          </button>
+        </div>
+      </div>
+    <% else %>
+      <div class="max-w-7xl mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mt-8">
+        <form id="request-form" phx-submit="submit" phx-change="update_field" class="p-6 sm:p-10 space-y-10">
+          
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <span class="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs">1</span>
+              <label class="text-base font-bold text-slate-900 dark:text-white">Tipe Layanan</label>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button type="button" phx-click="set_type" phx-value-type="aktivasi"
+                class={["relative p-5 rounded-xl border text-left transition-all",
+                  if(@request_type == "aktivasi", do: "border-blue-600 bg-blue-50/50 ring-1 ring-blue-600", else: "border-slate-200 dark:border-slate-700 hover:border-blue-300")]}>
+                <div class={["w-8 h-8 rounded-lg flex items-center justify-center mb-3", if(@request_type == "aktivasi", do: "bg-blue-600 text-white", else: "bg-slate-100 text-slate-500")]}>
+                  <.icon name="hero-user-plus" class="w-5 h-5" />
+                </div>
+                <p class="font-bold text-slate-900 dark:text-white text-sm">Aktivasi Baru</p>
+                <p class="text-xs text-slate-500 mt-1">Belum pernah memiliki akun email institusi @mahasiswa.trunojoyo.ac.id</p>
+              </button>
+              <button type="button" phx-click="set_type" phx-value-type="reset"
+                class={["relative p-5 rounded-xl border text-left transition-all",
+                  if(@request_type == "reset", do: "border-blue-600 bg-blue-50/50 ring-1 ring-blue-600", else: "border-slate-200 dark:border-slate-700 hover:border-blue-300")]}>
+                <div class={["w-8 h-8 rounded-lg flex items-center justify-center mb-3", if(@request_type == "reset", do: "bg-blue-600 text-white", else: "bg-slate-100 text-slate-500")]}>
+                  <.icon name="hero-key" class="w-5 h-5" />
+                </div>
+                <p class="font-bold text-slate-900 dark:text-white text-sm">Reset Password</p>
+                <p class="text-xs text-slate-500 mt-1">Lupa password atau terkendala login ke akun email kampus.</p>
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <span class="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs">2</span>
+              <label class="text-base font-bold text-slate-900 dark:text-white">Data Identitas</label>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">NIM Mahasiswa</label>
+                <input type="text" name="nim" value={@nim} placeholder="Contoh: 210411100001" required
+                  class="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-900 dark:text-white"/>
+                <%= if @errors[:nim] do %><p class="text-red-500 text-xs font-medium mt-1"><%= hd(@errors[:nim]) %></p><% end %>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
+                <input type="text" name="full_name" value={@full_name} placeholder="Sesuai Kartu Tanda Mahasiswa" required
+                  class="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-900 dark:text-white"/>
+                <%= if @errors[:full_name] do %><p class="text-red-500 text-xs font-medium mt-1"><%= hd(@errors[:full_name]) %></p><% end %>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Institusi yang Diinginkan</label>
+                <div class="relative">
+                  <input type="email" name="email_requested" value={@email_requested} placeholder="namaanda@mahasiswa.trunojoyo.ac.id" required
+                    class="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-900 dark:text-white pl-10"/>
+                  <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <.icon name="hero-envelope" class="w-5 h-5" />
+                  </div>
+                </div>
+                <%= if @errors[:email_requested] do %><p class="text-red-500 text-xs font-medium mt-1"><%= hd(@errors[:email_requested]) %></p><% end %>
+                <p class="text-xs text-slate-500 mt-1">Gunakan format <span class="font-medium text-blue-600">nim@mahasiswa.trunojoyo.ac.id</span> untuk kemudahan verifikasi.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <span class="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs">3</span>
+              <label class="text-base font-bold text-slate-900 dark:text-white">Verifikasi Berkas</label>
+            </div>
+            
+            <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 dark:bg-slate-800 transition-colors cursor-pointer relative"
+              phx-drop-target={@uploads.ktm_photo.ref}>
+
+              <%= for entry <- @uploads.ktm_photo.entries do %>
+                <div class="flex flex-col items-center">
+                  <div class="relative mb-4">
+                    <.live_img_preview entry={entry} class="max-h-48 rounded-lg shadow-sm" />
+                    <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref}
+                      class="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full shadow-sm hover:bg-red-600">
+                      <.icon name="hero-x-mark" class="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div class="w-full max-w-xs bg-slate-200 rounded-full h-2 mb-1">
+                    <div class="bg-blue-600 h-2 rounded-full transition-all" style={"width: #{entry.progress}%"}></div>
+                  </div>
+                  <p class="text-xs font-medium text-blue-600"><%= entry.progress %>% Selesai</p>
+                </div>
+              <% end %>
+
+              <.live_file_input upload={@uploads.ktm_photo} class="sr-only" />
+
+              <%= if Enum.empty?(@uploads.ktm_photo.entries) do %>
+                <label class="cursor-pointer block" for={@uploads.ktm_photo.ref}>
+                  <.icon name="hero-photo" class="mx-auto h-12 w-12 text-slate-300 mb-3" />
+                  <p class="text-sm font-semibold text-blue-600">Unggah Foto KTM</p>
+                  <p class="text-xs text-slate-500 mt-1">atau tarik dan lepas berkas di sini</p>
+                  <p class="text-xs text-slate-400 mt-2">JPG, PNG up to 5MB</p>
+                </label>
+              <% end %>
+
+              <%= for err <- upload_errors(@uploads.ktm_photo) do %>
+                <div class="mt-4 p-3 bg-red-50 text-red-600 text-xs rounded-lg flex items-center justify-center gap-2">
+                  <.icon name="hero-exclamation-circle" class="w-4 h-4" />
+                  <%= upload_error_to_string(err) %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <button type="submit"
+              class="w-full py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+              <span>Kirim Pengajuan</span>
+              <.icon name="hero-paper-airplane" class="w-4 h-4" />
+            </button>
+            <p class="text-center text-xs text-slate-500 mt-3">Data yang dikirim dijaga kerahasiaannya oleh UPA TIK UTM</p>
+          </div>
+        </form>
+      </div>
+    <% end %>
+  </div>
+</.navbar>
