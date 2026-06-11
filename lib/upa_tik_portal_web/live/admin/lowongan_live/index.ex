@@ -50,10 +50,7 @@ defmodule UpaTikPortalWeb.Admin.LowonganLive.Index do
     |> stream(:lowongans, lowongans, reset: true)
   end
 
-  @impl true
-  def handle_event("filter", %{"search" => search, "status" => status}, socket) do
-    {:noreply, push_patch(socket, to: ~p"/admin/lowongan?page=1&search=#{search}&status=#{status}")}
-  end
+
 
   def apply_action(socket, :edit, %{"id" => id}) do
     socket
@@ -68,6 +65,10 @@ defmodule UpaTikPortalWeb.Admin.LowonganLive.Index do
     |> assign(:opening, %InternshipOpening{})
   end
 
+  @impl true
+  def handle_event("filter", %{"search" => search, "status" => status}, socket) do
+    {:noreply, push_patch(socket, to: ~p"/admin/lowongan?page=1&search=#{search}&status=#{status}")}
+  end
 
 
   @impl true
