@@ -1,15 +1,16 @@
 <.navbarAdmin current_user={@current_user} active_tab={:lowongan}>
     <Layouts.flash_group flash={@flash} />
-    <div class="max-w-7xl mx-auto shadow-sm ring-1 ring-slate-200 rounded-xl p-8 mt-8">
+    <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
         <div class="max-w-7xl mx-auto">
-            <.link navigate={~p"/admin/lowongan"} class="text-sm font-semibold leading-6 hover:text-blue-500 flex items-center mb-6">
+            <.link navigate={~p"/admin/lowongan"} class="text-sm font-semibold text-slate-500 dark:text-slate-400 leading-6 hover:text-blue-600 dark:hover:text-blue-400 flex items-center mb-2">
                 <.icon name="hero-arrow-left" class="w-4 h-4 mr-1" /> Kembali ke Daftar
             </.link>
         </div>
-        <header class="mb-10">
-            <h1 class="text-2xl font-bold"><%= @page_title %></h1>
-            <p class="mt-2 text-sm">Perbarui informasi lowongan magang di bawah ini.</p>
-        </header>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 md:p-8 shadow-sm">
+            <header class="mb-10 border-b border-slate-100 dark:border-slate-800 pb-6">
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white"><%= @page_title %></h1>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Perbarui informasi lowongan magang di bawah ini.</p>
+            </header>
   
         <.simple_form for={@form} phx-change="validate" phx-submit="save">
             <div class="space-y-6">
@@ -34,10 +35,11 @@
             </div>
   
             <:actions>
-            <.button class="w-full justify-center rounded-lg text-white py-3 bg-blue-600 hover:bg-blue-700 cursor-pointer">
+            <.button class="w-full justify-center rounded-lg text-white py-3 bg-blue-600 hover:bg-blue-700 cursor-pointer transition-colors">
                 Simpan Perubahan
             </.button>
             </:actions>
         </.simple_form>
+        </div>
     </div>
 </.navbarAdmin>

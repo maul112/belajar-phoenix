@@ -1,7 +1,7 @@
 <.navbarAdmin current_user={@current_user} active_tab={:pengajuan}>
   <Layouts.flash_group flash={@flash} />
 
-  <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
     <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <a href="/admin/pengajuan" class="p-2 text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm transition-colors">
@@ -20,7 +20,7 @@
           <p class="text-xs text-slate-500 font-semibold mb-1">ID Pengajuan #<%= @request.id %></p>
           <p class="text-sm text-slate-700 dark:text-slate-300 font-medium">Dikirim: <%= Calendar.strftime(@request.inserted_at, "%d %b %Y %H:%M") %></p>
         </div>
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
           <%= format_type(@request.request_type) %>
         </span>
       </div>
@@ -42,9 +42,9 @@
           </div>
 
           <div class="space-y-6">
-            <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-              <p class="text-xs font-semibold text-blue-600 mb-2 uppercase tracking-wider">Email Target Aktivasi</p>
-              <p class="text-lg font-bold text-blue-900 break-all"><%= @request.email_requested %></p>
+            <div class="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-xl border border-blue-100 dark:border-blue-800">
+              <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 uppercase tracking-wider">Email Target Aktivasi</p>
+              <p class="text-lg font-bold text-blue-900 dark:text-blue-300 break-all"><%= @request.email_requested %></p>
             </div>
           </div>
         </section>
@@ -52,11 +52,11 @@
         <section class="border-t border-slate-200 dark:border-slate-700 pt-8">
            <div class="flex justify-between items-center mb-4">
              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Lampiran KTM</h3>
-             <a href={@request.ktm_photo_url || "#"} target="_blank" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+             <a href={@request.ktm_photo_url || "#"} target="_blank" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1">
                Lihat Ukuran Penuh <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
              </a>
            </div>
-           <div class="bg-slate-100 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-4">
+           <div class="bg-slate-100 dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-4">
               <img src={@request.ktm_photo_url || ""} class="w-full max-h-96 object-contain rounded-lg bg-white dark:bg-slate-900 shadow-sm" alt="KTM Image">
            </div>
         </section>
@@ -67,7 +67,7 @@
               <.icon name="hero-check" class="w-5 h-5" />
               Setujui Permohonan
             </button>
-            <button phx-click="reject" class="flex-1 py-3 bg-white dark:bg-slate-900 border border-red-200 text-red-600 font-semibold rounded-xl hover:bg-red-50 transition-colors text-sm flex items-center justify-center gap-2">
+            <button phx-click="reject" class="flex-1 py-3 bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 font-semibold rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-sm flex items-center justify-center gap-2">
               <.icon name="hero-x-mark" class="w-5 h-5" />
               Tolak Pengajuan
             </button>
@@ -76,14 +76,14 @@
 
         <%= if @request.status == "disetujui" do %>
           <section class="border-t border-slate-200 dark:border-slate-700 pt-8">
-            <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+            <div class="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-xl border border-blue-100 dark:border-blue-800">
               <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-white dark:bg-slate-900 rounded-lg flex items-center justify-center text-blue-600 shadow-sm">
+                <div class="w-10 h-10 bg-white dark:bg-slate-900 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
                   <.icon name="hero-envelope" class="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 class="text-sm font-bold text-blue-900">Panel Kontrol OTP</h4>
-                  <p class="text-xs text-blue-700">Kirim ke: <span class="font-semibold"><%= @request.user.email %></span></p>
+                  <h4 class="text-sm font-bold text-blue-900 dark:text-blue-300">Panel Kontrol OTP</h4>
+                  <p class="text-xs text-blue-700 dark:text-blue-400">Kirim ke: <span class="font-semibold"><%= @request.user.email %></span></p>
                 </div>
               </div>
 
@@ -93,13 +93,13 @@
                     name="manual_otp"
                     value={@manual_otp}
                     placeholder="Input Password Manual (Saran: 12345)"
-                    class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" />
+                    class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-blue-200 dark:border-blue-800 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" />
                   <.icon name="hero-key" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-blue-400" />
                 </div>
                 <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm disabled:opacity-50 flex items-center justify-center gap-2" disabled={@sending_otp}>
                   <%= if @sending_otp, do: "Mengirim...", else: "Kirim Kredensial" %>
                 </button>
-                <button type="button" phx-click="debug-email" phx-disable-with="Sedang Test..." class="px-4 py-2.5 bg-slate-200 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-300 transition-colors flex items-center justify-center gap-1">
+                <button type="button" phx-click="debug-email" phx-disable-with="Sedang Test..." class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-1">
                   <span>⚠️ Test</span>
                 </button>
               </.form>
@@ -118,14 +118,14 @@
           <div class="bg-slate-50 dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
             <div class="flex justify-between items-center mb-4">
               <h4 class="text-sm font-bold text-slate-900 dark:text-white">Catatan Administratif</h4>
-              <button phx-click="save-notes" class="text-xs font-semibold px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors">Simpan</button>
+              <button phx-click="save-notes" class="text-xs font-semibold px-4 py-2 bg-slate-900 dark:bg-slate-700 text-white rounded-lg hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors">Simpan</button>
             </div>
             <textarea
               phx-change="update-field"
               name="notes"
               rows="3"
               placeholder="Tuliskan catatan internal atau instruksi khusus di sini..."
-              class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none"
+              class="w-full px-4 py-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none"
             ><%= @notes %></textarea>
           </div>
         </section>

@@ -1,7 +1,7 @@
 <.navbarAdmin current_user={@current_user} active_tab={:intern}>
   <Layouts.flash_group flash={@flash} />
 
-  <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+  <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
     <.link navigate={~p"/admin/intern"} class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-blue-600 transition-colors">
       <.icon name="hero-arrow-left" class="w-4 h-4" />
       Kembali ke Daftar Intern
@@ -61,7 +61,7 @@
         <select
           name="mentor_id"
           id="mentor-select"
-          class="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="flex-1 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">-- Belum ditentukan --</option>
           <%= for mentor <- @mentors do %>
@@ -130,7 +130,7 @@
         <%= for {id, log} <- @streams.logs do %>
           <div id={id} class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
             <div class="flex items-center gap-2 mb-2">
-              <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+              <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold px-2.5 py-0.5 rounded-full">
                 Minggu ke-{log.week_number}
               </span>
               <span class="text-xs text-slate-400">
@@ -142,9 +142,9 @@
               <p class="text-sm text-slate-600 mt-1">{log.activity_description}</p>
             <% end %>
             <%= if log.feedback do %>
-              <div class="mt-3 bg-green-50 border border-green-200 rounded-xl p-3">
-                <p class="text-xs font-semibold text-green-700 mb-1">Feedback Mentor</p>
-                <p class="text-sm text-green-800">{log.feedback}</p>
+              <div class="mt-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-3">
+                <p class="text-xs font-semibold text-green-700 dark:text-green-400 mb-1">Feedback Mentor</p>
+                <p class="text-sm text-green-800 dark:text-green-300">{log.feedback}</p>
               </div>
             <% else %>
               <p class="text-xs text-orange-500 mt-2 italic">Belum ada feedback dari mentor.</p>
@@ -157,13 +157,13 @@
     <%!-- Tab: Presensi --%>
     <div class={if @active_tab != :presensi, do: "hidden"}>
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-        <div id="presences-panel" phx-update="stream" class="divide-y divide-slate-100">
+        <div id="presences-panel" phx-update="stream" class="divide-y divide-slate-100 dark:divide-slate-800">
           <div id="empty-presences" class="hidden only:block text-center py-10 text-slate-500 text-sm">
             Belum ada data presensi.
           </div>
           <%= for {id, presence} <- @streams.presences do %>
             <% {label, badge_class} = status_badge(presence.status) %>
-            <div id={id} class="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:bg-slate-800">
+            <div id={id} class="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
               <div>
                 <p class="text-sm font-medium text-slate-900 dark:text-white">
                   {Calendar.strftime(presence.date, "%A, %d %b %Y")}
@@ -211,11 +211,11 @@
                     {complaint.category}
                   </span>
                   <%= if complaint.is_resolved do %>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
                       Resolved
                     </span>
                   <% else %>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
                       Pending
                     </span>
                   <% end %>
@@ -231,11 +231,11 @@
                 phx-value-id={complaint.id}
                 class={[
                   "text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors whitespace-nowrap",
-                  complaint.is_resolved && "border-slate-300 text-slate-600 hover:bg-slate-50 dark:bg-slate-800",
-                  !complaint.is_resolved && "border-green-300 text-green-700 bg-green-50 hover:bg-green-100"
+                  complaint.is_resolved && "border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50",
+                  !complaint.is_resolved && "border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50"
                 ]}
               >
-                <%= if complaint.is_resolved, do: "Buka kembali", else: "Tandai Resolved" %>
+                <%= if complaint.is_resolved, do: "Buka kembali", else: "Tandai Selesai" %>
               </button>
             </div>
           </div>

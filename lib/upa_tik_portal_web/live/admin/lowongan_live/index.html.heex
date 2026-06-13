@@ -1,22 +1,22 @@
 <div class="min-h-screen">
   <.navbarAdmin current_user={@current_user} active_tab={:lowongan}>
-    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col lg:flex-row justify-between items-center mb-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+      <div class="flex flex-col lg:flex-row justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
         <div class="text-center lg:text-left mb-4 lg:mb-0">
           <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Lowongan Magang</h1>
-          <p class="text-slate-500 mt-1 text-sm">Kelola semua daftar lowongan magang aktif di portal ini.</p>
+          <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Kelola semua daftar lowongan magang aktif di portal ini.</p>
         </div>
 
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
           <form phx-change="filter" class="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto">
             <div class="relative w-full sm:w-64">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <.icon name="hero-magnifying-glass" class="h-5 w-5 text-slate-400" />
+                    <.icon name="hero-magnifying-glass" class="h-5 w-5 text-slate-400 dark:text-slate-500" />
                 </div>
-                <input type="text" name="search" value={@search} phx-debounce="300" placeholder="Cari posisi atau departemen..." class="block w-full pl-10 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" />
+                <input type="text" name="search" value={@search} phx-debounce="300" placeholder="Cari posisi atau departemen..." class="block w-full pl-10 pr-3 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" />
             </div>
             <div class="w-full sm:w-auto">
-                <select name="status" class="block w-full py-2 px-3 border border-slate-300 bg-white dark:bg-slate-900 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+                <select name="status" class="block w-full py-2 px-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
                     <option value="">Semua Status</option>
                     <option value="true" selected={@status == "true"}>Open</option>
                     <option value="false" selected={@status == "false"}>Closed</option>
@@ -45,8 +45,8 @@
         </:col>
 
         <:col :let={{_id, item}} label="Divisi">
-          <div class="flex items-center text-slate-600">
-            <.icon name="hero-map-pin" class="w-4 h-4 mr-1" />
+          <div class="flex items-center text-slate-600 dark:text-slate-300">
+            <.icon name="hero-map-pin" class="w-4 h-4 mr-1 text-slate-400 dark:text-slate-500" />
             <%= if item.division, do: item.division.name, else: "-" %>
           </div>
         </:col>
@@ -56,8 +56,8 @@
               Saya tambahkan pengecekan ganda agar aplikasimu aman dari bug tipe data. --%>
           <span class={[
             "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
-            item.is_active in [true, "true"] && "bg-green-50 text-green-700 ring-green-600/20",
-            item.is_active in [false, "false"] && "bg-red-50 text-red-700 ring-red-600/20"
+            item.is_active in [true, "true"] && "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 ring-green-600/20 dark:ring-green-500/20",
+            item.is_active in [false, "false"] && "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 ring-red-600/20 dark:ring-red-500/20"
           ]}>
             <%= if item.is_active in [true, "true"], do: "Open", else: "Closed" %>
           </span>
@@ -94,7 +94,7 @@
       <div :if={!@any_lowongan?} class="py-20 text-center border-t border-slate-100">
         <.icon name="hero-briefcase" class="mx-auto h-12 w-12 text-slate-300" />
         <h3 class="mt-2 text-sm font-semibold text-slate-900 dark:text-white">Belum ada lowongan</h3>
-        <p class="mt-1 text-sm text-slate-500">Mulai dengan membuat lowongan magang pertama Anda.</p>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Mulai dengan membuat lowongan magang pertama Anda.</p>
       </div>
 
       <%!-- Pagination --%>

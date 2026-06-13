@@ -11,15 +11,19 @@ defmodule UpaTikPortalWeb.Admin.UserLive.Index do
   def handle_event("change_role", %{"id" => id, "role" => role}, socket) do
     user = Accounts.get_user!(id)
     
-    case Accounts.update_user_role(user, role) do
-      {:ok, _updated_user} ->
-        users = Accounts.list_users()
-        {:noreply, 
-         socket 
-         |> assign(users: users)
-         |> put_flash(:info, "Role pengguna berhasil diubah menjadi #{String.capitalize(role)}.")}
-      {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Gagal mengubah role pengguna.")}
+    if user.role == "admin" do
+      {:noreply, put_flash(socket, :error, "Role admin tidak dapat diubah.")}
+    else
+      case Accounts.update_user_role(user, role) do
+        {:ok, _updated_user} ->
+          users = Accounts.list_users()
+          {:noreply, 
+           socket 
+           |> assign(users: users)
+           |> put_flash(:info, "Role pengguna berhasil diubah menjadi #{String.capitalize(role)}.")}
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Gagal mengubah role pengguna.")}
+      end
     end
   end
 

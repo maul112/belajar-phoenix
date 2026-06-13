@@ -1,0 +1,33 @@
+# Tidak perlu disalin ke Docker build context
+_build/
+deps/
+.git/
+.vscode/
+cover/
+doc/
+tmp/
+test/
+
+# Compiled assets (akan di-rebuild di container)
+priv/static/assets/
+priv/static/cache_manifest.json
+
+# Node modules di assets (akan di-npm ci di container)
+assets/node_modules/
+
+# Environment files lokal
+.env
+.env.*
+!.env.production.example
+
+# File besar / tidak relevan
+*.zip
+*.sql
+*.ez
+erl_crash.dump
+npm-debug.log
+
+# IDE / Editor
+.idea/
+*.swp
+*.swo

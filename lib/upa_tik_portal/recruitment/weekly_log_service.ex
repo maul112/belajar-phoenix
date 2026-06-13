@@ -22,7 +22,7 @@ defmodule UpaTikPortal.Recruitment.WeeklyLogService do
     participation = UpaTikPortal.Recruitment.InternshipParticipationService.get_internship_participation!(participation_id)
     today = UpaTikPortalWeb.Helpers.TimeHelper.today_wib()
 
-    if participation.end_date && Date.compare(today, participation.end_date) == :gt do
+    if participation.internship_opening.end_date && Date.compare(today, participation.internship_opening.end_date) == :gt do
       {:error, "Periode magang telah berakhir. Batas waktu pengunggahan logbook sudah lewat."}
     else
       %WeeklyLog{}

@@ -1,11 +1,11 @@
 <.navbarAdmin current_user={@current_user} active_tab={:divisi}>
   <Layouts.flash_group flash={@flash} />
 
-  <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
       <div class="text-center md:text-left">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Kelola Divisi</h1>
-        <p class="text-slate-500 mt-1 text-sm">Tambahkan dan kelola divisi untuk lowongan magang</p>
+        <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Tambahkan dan kelola divisi untuk lowongan magang</p>
       </div>
     </div>
 
@@ -24,7 +24,7 @@
             <:actions>
               <div class="flex gap-2 w-full mt-4">
                 <%= if @edit_id do %>
-                  <button type="button" phx-click="cancel_edit" class="flex-1 py-2 px-4 border border-slate-300 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium">Batal</button>
+                  <button type="button" phx-click="cancel_edit" class="flex-1 py-2 px-4 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors">Batal</button>
                 <% end %>
                 <button class="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">Simpan</button>
               </div>
@@ -36,32 +36,32 @@
       <%!-- List Divisi --%>
       <div class="lg:col-span-2">
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <table class="min-w-full divide-y divide-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
             <thead class="bg-slate-50 dark:bg-slate-800">
               <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama Divisi</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Deskripsi</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Divisi</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Deskripsi</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-slate-900 divide-y divide-slate-200">
+            <tbody class="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-800">
               <%= for division <- @divisions do %>
-                <tr class="hover:bg-slate-50 dark:bg-slate-800">
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-slate-900 dark:text-white"><%= division.name %></div>
                   </td>
                   <td class="px-6 py-4">
-                    <div class="text-sm text-slate-500 line-clamp-2"><%= division.description || "-" %></div>
+                    <div class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2"><%= division.description || "-" %></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button phx-click="edit" phx-value-id={division.id} class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                    <button phx-click="delete" phx-value-id={division.id} data-confirm="Hapus divisi ini?" class="text-red-600 hover:text-red-900">Hapus</button>
+                    <button phx-click="edit" phx-value-id={division.id} class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3 transition-colors">Edit</button>
+                    <button phx-click="delete" phx-value-id={division.id} data-confirm="Hapus divisi ini?" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">Hapus</button>
                   </td>
                 </tr>
               <% end %>
               <%= if Enum.empty?(@divisions) do %>
                 <tr>
-                  <td colspan="3" class="px-6 py-8 text-center text-slate-500">
+                  <td colspan="3" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
                     Belum ada data divisi.
                   </td>
                 </tr>

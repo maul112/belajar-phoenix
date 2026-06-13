@@ -73,9 +73,9 @@ defmodule UpaTikPortalWeb.Home.Magang.Complaint.Index do
     end
   end
 
-  defp category_color("Fasilitas"), do: "bg-purple-100 text-purple-700"
-  defp category_color("Teknis"), do: "bg-blue-100 text-blue-700"
-  defp category_color("Lingkungan"), do: "bg-green-100 text-green-700"
-  defp category_color("Lainnya"), do: "bg-slate-100 text-slate-700"
-  defp category_color(_), do: "bg-slate-100 text-slate-700"
+  defp category_color("Fasilitas"), do: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
+  defp category_color("Teknis"), do: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+  defp category_color("Lingkungan"), do: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+  defp category_color("Lainnya"), do: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400"
+  defp category_color(_), do: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400"
 end

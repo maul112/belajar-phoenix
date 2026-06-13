@@ -19,7 +19,7 @@
           <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 flex flex-col items-center text-center">
             <h3 class="font-bold text-slate-900 dark:text-white mb-2">QR Code Presensi</h3>
             <p class="text-sm text-slate-500 mb-4">Tunjukkan QR Code ini ke mentor atau admin untuk check-in/out.</p>
-            <button phx-click={show_modal("qr-modal-presensi")} class="bg-white dark:bg-slate-900 p-4 border-2 border-slate-100 rounded-xl max-w-[200px] w-full hover:border-blue-300 transition-colors cursor-zoom-in" title="Klik untuk memperbesar">
+            <button phx-click={show_modal("qr-modal-presensi")} class="bg-white p-4 border-2 border-slate-100 dark:border-slate-700 rounded-xl max-w-[200px] w-full hover:border-blue-300 transition-colors cursor-zoom-in" title="Klik untuk memperbesar">
               <%= raw(@qr_svg) %>
             </button>
           </div>
@@ -108,7 +108,7 @@
         <div class="text-center p-2">
           <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">QR Code Presensi</h3>
           <p class="text-sm text-slate-500 mb-6">Arahkan layar ini ke Scanner QR Mentor atau Admin untuk melakukan Check-in dan Check-out.</p>
-          <div class="bg-white dark:bg-slate-900 p-6 border-2 border-slate-100 rounded-2xl max-w-[280px] w-full mx-auto shadow-sm">
+          <div class="bg-white p-6 border-2 border-slate-100 dark:border-slate-700 rounded-2xl max-w-[280px] w-full mx-auto shadow-sm">
             <%= raw(@qr_svg) %>
           </div>
         </div>

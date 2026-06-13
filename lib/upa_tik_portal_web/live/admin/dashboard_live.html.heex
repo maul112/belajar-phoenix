@@ -1,15 +1,15 @@
 <.navbarAdmin current_user={@current_user} active_tab={:dashboard}>
   <Layouts.flash_group flash={@flash} />
 
-  <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
       <div>
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Dashboard Admin</h1>
-        <p class="text-slate-500 mt-1 text-sm"><%= Calendar.strftime(DateTime.utc_now(), "%d %B %Y") %></p>
+        <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm"><%= Calendar.strftime(DateTime.utc_now(), "%d %B %Y") %></p>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <%!-- Keluhan & Pengajuan --%>
       <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700 flex items-center hover:shadow-md transition-shadow">
         <div class="p-3 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-4">
@@ -104,8 +104,8 @@
       </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl p-6 md:p-8 border border-slate-200 dark:border-slate-700">
-      <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 border-b border-slate-100 pb-4">Akses Cepat Tautan Manajerial</h3>
+    <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
+      <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Akses Cepat Tautan Manajerial</h3>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         
         <a href="/admin/pengajuan" class="group relative rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex flex-col items-start gap-4">

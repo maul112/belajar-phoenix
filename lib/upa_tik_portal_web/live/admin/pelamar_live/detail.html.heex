@@ -1,8 +1,8 @@
 <.navbarAdmin current_user={@current_user} active_tab={:pelamar}>
   <Layouts.flash_group flash={@flash} />
 
-  <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
-    <.link navigate={~p"/admin/pelamar"} class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-blue-600 transition-colors">
+  <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+    <.link navigate={~p"/admin/pelamar"} class="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
       <.icon name="hero-arrow-left" class="w-4 h-4" />
       Kembali ke Daftar Pelamar
     </.link>
@@ -16,7 +16,7 @@
           </div>
           <div>
             <h1 class="text-xl font-bold text-slate-900 dark:text-white">{@participation.user.name}</h1>
-            <p class="text-sm text-slate-500">{@participation.user.email}</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">{@participation.user.email}</p>
           </div>
         </div>
         <span class={["text-sm font-semibold px-3 py-1.5 rounded-full", status_color(@participation.status)]}>
@@ -31,27 +31,27 @@
         <h3 class="font-semibold text-slate-800 dark:text-slate-200">Informasi Lamaran</h3>
         <div class="space-y-2 text-sm">
           <div class="flex justify-between">
-            <span class="text-slate-500">Posisi</span>
+            <span class="text-slate-500 dark:text-slate-400">Posisi</span>
             <span class="font-medium text-slate-900 dark:text-white">{@participation.internship_opening.title}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Departemen</span>
+            <span class="text-slate-500 dark:text-slate-400">Departemen</span>
             <span class="text-slate-700 dark:text-slate-300">{(if @participation.internship_opening.division, do: @participation.internship_opening.division.name, else: "-")}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Universitas</span>
+            <span class="text-slate-500 dark:text-slate-400">Universitas</span>
             <span class="text-slate-700 dark:text-slate-300">Universitas Trunojoyo Madura</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Program Studi</span>
+            <span class="text-slate-500 dark:text-slate-400">Program Studi</span>
             <span class="text-slate-700 dark:text-slate-300">{@participation.major}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Mulai</span>
+            <span class="text-slate-500 dark:text-slate-400">Mulai</span>
             <span class="text-slate-700 dark:text-slate-300">{Calendar.strftime(@participation.internship_opening.start_date, "%d %b %Y")}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Selesai</span>
+            <span class="text-slate-500 dark:text-slate-400">Selesai</span>
             <span class="text-slate-700 dark:text-slate-300">{Calendar.strftime(@participation.internship_opening.end_date, "%d %b %Y")}</span>
           </div>
         </div>
@@ -67,15 +67,15 @@
             {"Surat Pengantar", @participation.surat_pengantar_url},
             {"Transkrip Nilai", @participation.transkrip_nilai_url}
           ] do %>
-            <div class="flex items-center justify-between text-sm py-1.5 border-b border-slate-100 last:border-0">
-              <span class="text-slate-600">{label}</span>
+            <div class="flex items-center justify-between text-sm py-1.5 border-b border-slate-100 dark:border-slate-700 last:border-0">
+              <span class="text-slate-600 dark:text-slate-300">{label}</span>
               <%= if url && url != "" do %>
-                <a href={url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium">
+                <a href={url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
                   <.icon name="hero-arrow-top-right-on-square" class="w-3.5 h-3.5" />
                   Lihat
                 </a>
               <% else %>
-                <span class="text-slate-400 italic text-xs">Tidak ada</span>
+                <span class="text-slate-400 dark:text-slate-500 italic text-xs">Tidak ada</span>
               <% end %>
             </div>
           <% end %>
@@ -88,10 +88,10 @@
       <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-4">Ubah Status Lamaran</h3>
       <div class="flex flex-wrap gap-3">
         <%= for {status, label, btn_class} <- [
-          {"applied", "Menunggu Review", "border-blue-300 text-blue-700 hover:bg-blue-50"},
-          {"interview", "Tahap Interview", "border-yellow-300 text-yellow-700 hover:bg-yellow-50"},
-          {"accepted", "Terima", "border-green-400 text-green-700 hover:bg-green-50 bg-green-50"},
-          {"rejected", "Tolak", "border-red-300 text-red-700 hover:bg-red-50"}
+          {"applied", "Menunggu Review", "border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/50"},
+          {"interview", "Tahap Interview", "border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/50"},
+          {"accepted", "Terima", "border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/50 bg-green-50 dark:bg-green-900/20"},
+          {"rejected", "Tolak", "border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50"}
         ] do %>
           <button
             id={"status-btn-#{status}"}
@@ -121,9 +121,9 @@
           <.icon name="hero-exclamation-triangle" class="w-8 h-8 text-red-600" />
         </div>
         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Tolak Lamaran?</h3>
-        <p class="text-slate-500 text-sm mb-6">Apakah Anda yakin ingin menolak pelamar ini? Setelah ditolak, status lamaran tidak dapat diubah kembali.</p>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">Apakah Anda yakin ingin menolak pelamar ini? Setelah ditolak, status lamaran tidak dapat diubah kembali.</p>
         <div class="flex justify-center gap-3">
-          <button type="button" phx-click={hide_modal("reject-modal")} class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl font-medium transition-colors">
+          <button type="button" phx-click={hide_modal("reject-modal")} class="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-medium transition-colors">
             Batal
           </button>
           <button type="button" phx-click={JS.push("update_status", value: %{status: "rejected"}) |> hide_modal("reject-modal")} class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors">
@@ -141,7 +141,7 @@
           <select
             name="mentor_id"
             id="mentor-select"
-            class="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="flex-1 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">-- Belum ditentukan --</option>
             <%= for mentor <- @mentors do %>
@@ -155,7 +155,7 @@
           </button>
         </form>
         <%= if @participation.mentor do %>
-          <p class="text-xs text-slate-500 mt-2">Mentor saat ini: <span class="font-medium">{@participation.mentor.name}</span></p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Mentor saat ini: <span class="font-medium">{@participation.mentor.name}</span></p>
         <% end %>
       </div>
     <% end %>
@@ -163,12 +163,12 @@
     <%!-- Audit Logs --%>
     <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm mt-6">
       <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-        <.icon name="hero-clock" class="w-5 h-5 text-slate-500" />
+        <.icon name="hero-clock" class="w-5 h-5 text-slate-500 dark:text-slate-400" />
         Riwayat Perubahan Status
       </h3>
       
       <%= if Enum.empty?(@audit_logs) do %>
-        <p class="text-sm text-slate-500 italic">Belum ada riwayat perubahan status.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 italic">Belum ada riwayat perubahan status.</p>
       <% else %>
         <div class="space-y-4">
           <%= for log <- @audit_logs do %>
@@ -183,7 +183,7 @@
                     oleh <span class="font-medium text-slate-900 dark:text-white">{log.changed_by.name}</span>
                   <% end %>
                 </p>
-                <p class="text-xs text-slate-500">{Calendar.strftime(log.inserted_at |> DateTime.add(7, :hour), "%d %B %Y, %H:%M WIB")}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">{Calendar.strftime(log.inserted_at |> DateTime.add(7, :hour), "%d %B %Y, %H:%M WIB")}</p>
               </div>
             </div>
           <% end %>

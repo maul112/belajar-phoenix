@@ -20,23 +20,22 @@
         <table class="w-full text-left border-collapse">
           <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Identitas Pengguna</th>
-              <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Kredensial Email</th>
-              <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Hak Akses</th>
-              <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Aksi & Aktivitas</th>
+              <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Identitas Pengguna</th>
+              <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kredensial Email</th>
+              <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Hak Akses</th>
+              <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Aksi & Aktivitas</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <%= for user <- @users do %>
-              <tr class="hover:bg-slate-50/50 transition-colors">
+              <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-lg hover:bg-blue-600 transition-colors cursor-default">
                       <%= String.at(user.name, 0) %>
                     </div>
                     <div>
-                      <p class="font-bold text-slate-900 dark:text-white text-sm hover:text-blue-600 transition-colors cursor-default"><%= user.name %></p>
-                      <p class="text-xs text-slate-500 mt-0.5">ID: #<%= user.id %></p>
+                      <p class="font-bold text-slate-900 dark:text-white text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-default"><%= user.name %></p>
                     </div>
                   </div>
                 </td>
@@ -53,20 +52,20 @@
                 <td class="px-6 py-4 text-right">
                   <div class="flex flex-col items-end gap-2">
                     <div class="flex gap-2">
-                      <%= if user.role != "mentor" do %>
-                        <button phx-click="change_role" phx-value-id={user.id} phx-value-role="mentor" data-confirm="Ubah role user ini menjadi Mentor?" class="px-3 py-1.5 bg-white dark:bg-slate-900 border border-green-300 text-green-700 rounded-lg hover:bg-green-50 transition-colors text-xs font-semibold">
+                      <%= if user.role == "mahasiswa" do %>
+                        <button phx-click="change_role" phx-value-id={user.id} phx-value-role="mentor" data-confirm="Ubah role user ini menjadi Mentor?" class="px-3 py-1.5 bg-white dark:bg-slate-900 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors text-xs font-semibold">
                           Jadikan Mentor
                         </button>
                       <% end %>
                       <%= if user.role == "mentor" do %>
-                        <button phx-click="change_role" phx-value-id={user.id} phx-value-role="mahasiswa" data-confirm="Kembalikan role user ini menjadi Mahasiswa?" class="px-3 py-1.5 bg-white dark:bg-slate-900 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-xs font-semibold">
+                        <button phx-click="change_role" phx-value-id={user.id} phx-value-role="mahasiswa" data-confirm="Kembalikan role user ini menjadi Mahasiswa?" class="px-3 py-1.5 bg-white dark:bg-slate-900 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-xs font-semibold">
                           Hapus Mentor
                         </button>
                       <% end %>
                     </div>
                     <div>
-                      <p class="text-[10px] text-slate-400 font-semibold mb-0.5">Update Terakhir</p>
-                      <p class="text-xs font-medium text-slate-600"><%= Calendar.strftime(user.updated_at, "%d %b %Y") %></p>
+                      <p class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mb-0.5">Update Terakhir</p>
+                      <p class="text-xs font-medium text-slate-600 dark:text-slate-400"><%= Calendar.strftime(user.updated_at, "%d %b %Y") %></p>
                     </div>
                   </div>
                 </td>
